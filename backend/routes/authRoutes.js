@@ -1,12 +1,13 @@
+// Importation des modules nécessaires
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const { body, validationResult } = require('express-validator');
-const User = require('../models/User');
+const bcrypt = require('bcryptjs'); // Pour hasher les mots de passe
+const { body, validationResult } = require('express-validator'); // Pour valider les données envoyées
+const User = require('../models/User'); // Modèle User pour interagir avec MongoDB
 
-// Route d'inscription
+// Route POST pour l'inscription
 router.post('/register', [
-  // Validations
+  // Validation des champs envoyés par l'utilisateur
   body('email').isEmail().withMessage('Email invalide.'),
   body('password').isLength({ min: 6 }).withMessage('Le mot de passe doit contenir au moins 6 caractères.'),
   body('nom').notEmpty().withMessage('Le nom est obligatoire.'),
@@ -18,30 +19,32 @@ router.post('/register', [
   body('typeUtilisateur').isIn(['Etudiant', 'Enseignant']).withMessage('Le type d\'utilisateur doit être "Etudiant" ou "Enseignant".')
 ], async (req, res) => {
 
+  // Vérification s'il y a des erreurs de validation  
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     // Retourner toutes les erreurs
     return res.status(400).json({ errors: errors.array() });
   }
 
+  // Extraction des données du corps de la requête
   const { nom, prenom, email, password, dateNaissance, sexe, etablissement, filiere, typeUtilisateur } = req.body;
 
   try {
-    // Vérifier si l'utilisateur existe déjà
+    // Vérifier si un utilisateur avec cet email existe déjà
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Cet email est déjà utilisé.' });
     }
 
-    // Hasher le mot de passe
+    // Hasher (chiffrer) le mot de passe pour la sécurité
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Créer un nouvel utilisateur
+    // Créer un nouvel utilisateur avec les informations
     const user = new User({
       nom,
       prenom,
       email,
-      password: hashedPassword,
+      password: hashedPassword, // Enregistrement du mot de passe hashé
       dateNaissance,
       sexe,
       etablissement,
@@ -49,7 +52,9 @@ router.post('/register', [
       typeUtilisateur
     });
 
+    // Sauvegarder le nouvel utilisateur dans la base de données
     await user.save();
+
     res.status(201).json({ message: 'Utilisateur créé avec succès.' });
 
   } catch (error) {
@@ -58,4 +63,5 @@ router.post('/register', [
   }
 });
 
+// Exportation du routeur pour l'utiliser dans server.js
 module.exports = router;

@@ -1,12 +1,14 @@
+// Importation de mongoose pour la création du modèle
 const mongoose = require('mongoose');
 
+// Définition du schéma utilisateur (structure dans la base MongoDB)
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
     unique: true,
     lowercase: true,
-    trim: true,
+    trim: true, // Supprimer les espaces inutiles
   },
   nom: {
     type: String,
@@ -25,7 +27,7 @@ const userSchema = new mongoose.Schema({
   sexe: {
     type: String,
     required: true,
-    enum: ['Homme', 'Femme'],
+    enum: ['Homme', 'Femme'], // Restriction des valeurs acceptées
   },
   etablissement: {
     type: String,
@@ -46,8 +48,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-}, { timestamps: true });
+}, { timestamps: true }); // timestamps ajoute createdAt et updatedAt automatiquement
 
+// Création du modèle basé sur ce schéma
 const User = mongoose.model('User', userSchema);
 
+// Exportation du modèle pour pouvoir l'utiliser ailleurs
 module.exports = User;
