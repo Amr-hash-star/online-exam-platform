@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Inscription</title>
+</head>
+<body>
+  <h1>Formulaire d'inscription</h1>
+  <form id="registerForm">
+    <input type="text" name="email" placeholder="Email" required><br>
+    <input type="text" name="nom" placeholder="Nom" required><br>
+    <input type="text" name="prenom" placeholder="Prénom" required><br>
+    <input type="date" name="dateNaissance" required><br>
+    <select name="sexe" required>
+      <option value="">-- Sélectionnez le sexe --</option>
+      <option value="Homme">Homme</option>
+      <option value="Femme">Femme</option>
+    </select><br>
+    <input type="text" name="etablissement" placeholder="Établissement" required><br>
+    <input type="text" name="filiere" placeholder="Filière" required><br>
+    <select name="typeUtilisateur" required>
+      <option value="">-- Type d'utilisateur --</option>
+      <option value="Etudiant">Étudiant</option>
+      <option value="Enseignant">Enseignant</option>
+    </select><br>
+    <input type="password" name="password" placeholder="Mot de passe" required><br>
+    <button type="submit">S'inscrire</button>
+  </form>
+
+  <div id="message"></div>
+
+  <script>
+    const form = document.getElementById('registerForm');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        const messageDiv = document.getElementById('message');
+
+        if (response.ok) {
+          messageDiv.innerHTML = `<p style="color:green;">${result.message}</p>`;
+        } else {
+          messageDiv.innerHTML = `<p style="color:red;">${result.message || result.errors.map(err => err.msg).join(', ')}</p>`;
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+      }
+    });
+  </script>
+</body>
+</html>
