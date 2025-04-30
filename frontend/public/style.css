@@ -1,0 +1,55 @@
+/* 
+----------------------------------------
+
+ Ce fichier est utilisé pour styliser toutes les pages HTML comme :
+   - index.html (inscription)
+   - login.html (connexion)
+
+  Tu peux modifier :
+   - les couleurs, polices, marges, alignements
+   - l’apparence des boutons, formulaires, titres, etc.
+
+  Ne modifie pas :
+   - les ID (#registerForm, #loginForm, #message)
+   - les balises <form>, <input>, <select>, <button>
+   - les attributs HTML (name, id)
+
+ ❗Le backend s'appuie sur ces éléments pour fonctionner correctement.
+
+----------------------------------------
+*/
+
+/* Style général du corps de la page */
+body {
+
+  }
+  
+  /* Titre principal */
+  h1 {
+
+  }
+  
+  /* Formulaire stylisé */
+  form {
+    
+  }
+  
+  /* Champs du formulaire */
+  input, select {
+    
+  }
+  
+  /* Bouton principal */
+  button {
+    
+  }
+  
+  button:hover {
+    
+  }
+  
+  /* Zone de message (succès ou erreur) */
+  #message {
+    
+  }
+  
