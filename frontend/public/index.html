@@ -56,8 +56,10 @@
 
         if (response.ok) {
           messageDiv.innerHTML = `<p style="color:green;">${result.message}</p>`;
+          alert("Utilisateur créé avec succès.");
         } else {
           messageDiv.innerHTML = `<p style="color:red;">${result.message || result.errors.map(err => err.msg).join(', ')}</p>`;
+          alert("Cet email est déjà utilisé.");
         }
       } catch (error) {
         console.error('Erreur:', error);
