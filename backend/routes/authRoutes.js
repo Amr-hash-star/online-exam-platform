@@ -9,7 +9,7 @@ const { body, validationResult } = require('express-validator'); // Pour valider
 const jwt = require('jsonwebtoken'); // Pour créer et vérifier les tokens JWT
 const User = require('../models/User'); // Le modèle d'utilisateur (MongoDB)
 const authenticate = require('../middlewares/authMiddleware'); // Middleware pour protéger les routes avec JWT
-
+const { loginUser } = require('../controllers/loginController');
 
 // =============================================
 // ROUTE POST : INSCRIPTION D'UN UTILISATEUR
@@ -77,41 +77,10 @@ router.post('/register', [
 // puis retourne un token JWT s'ils sont corrects.
 
 router.post('/login', [
-  body('email').isEmail().withMessage('Email invalide.'),
-  body('password').notEmpty().withMessage('Le mot de passe est obligatoire.')
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Email ou mot de passe incorrect." });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Email ou mot de passe incorrect." });
-    }
-
-    const token = jwt.sign(
-      { userId: user._id, typeUtilisateur: user.typeUtilisateur }, // données stockées dans le token
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' } // Durée de vie du token
-    );
-
-    res.json({ token, message: "Connexion réussie." });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erreur lors de la connexion.", error: error.message });
-  }
-});
-
+    body('email').isEmail().withMessage('Email invalide.'),
+    body('password').notEmpty().withMessage('Le mot de passe est obligatoire.')
+  ], loginUser);
+  
 
 // =============================================
 // ROUTE GET : PROFIL DE L'UTILISATEUR CONNECTÉ
