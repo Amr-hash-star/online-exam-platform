@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Ajouter une question</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    label { font-weight: bold; display: block; margin-top: 10px; }
+    .option { margin-bottom: 5px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div style="text-align: right;">
+    <button id="logoutBtn" style="background-color: red; color: white; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer;">Se déconnecter</button>
+  </div>
+  <h1>Ajouter une question à un examen</h1>
+
+  <label>Examen ID (copie depuis /api/exams ou lien généré) :</label>
+  <input type="text" id="examId" required>
+
+  <label>Type de question :</label>
+  <select id="type">
+    <option value="qcm">QCM</option>
+    <option value="directe">Question directe</option>
+  </select>
+
+  <label>Énoncé :</label>
+  <textarea id="enonce" rows="3" cols="50"></textarea>
+
+  <label>Ajouter un média :</label>
+  <input type="file" id="media">
+
+  <div id="qcm-options">
+    <label>Options (coche les bonnes réponses) :</label>
+    <div id="options-list"></div>
+    <button type="button" onclick="ajouterOption()">Ajouter une option</button>
+  </div>
+
+  <label>Durée (en secondes) :</label>
+  <input type="number" id="duree" min="0">
+
+  <label>Note :</label>
+  <input type="number" id="note" min="0" step="0.5">
+
+  <br><br>
+  <button onclick="soumettreQuestion()">Soumettre la question</button>
+
+  <script>
+    const typeSelect = document.getElementById('type');
+    const optionsList = document.getElementById('options-list');
+    const qcmOptions = document.getElementById('qcm-options');
+
+    typeSelect.addEventListener('change', () => {
+      qcmOptions.style.display = typeSelect.value === 'qcm' ? 'block' : 'none';
+    });
+
+    // Cache initialement si le type n'est pas QCM
+    qcmOptions.style.display = typeSelect.value === 'qcm' ? 'block' : 'none';
+
+    function ajouterOption() {
+      const index = optionsList.children.length;
+      const div = document.createElement('div');
+      div.className = 'option';
+      div.innerHTML = `
+        <input type="checkbox" class="checkbox" />
+        <input type="text" placeholder="Option ${index + 1}" class="option-text"/>
+      `;
+      optionsList.appendChild(div);
+    }
+
+    async function soumettreQuestion() {
+      let examIdInput = document.getElementById('examId').value.trim();
+
+      // Si l'utilisateur entre un lien, on extrait le code
+      if (examIdInput.startsWith('http')) {
+        const code = examIdInput.split('/').pop();
+        try {
+          const res = await fetch(`http://localhost:5000/api/exams/code/${code}`);
+          if (!res.ok) {
+            alert("Lien d'examen invalide ou inexistant.");
+            return;
+          }
+          const exam = await res.json();
+          examIdInput = exam._id;
+        } catch (err) {
+          alert("Erreur lors de la récupération de l'examen.");
+          console.error(err);
+          return;
+        }
+      }
+
+      // Vérification de validité de l'ObjectId
+      if (!/^[0-9a-fA-F]{24}$/.test(examIdInput)) {
+        alert("L'ID d'examen semble invalide.");
+        return;
+      }
+
+      const type = document.getElementById('type').value;
+      const enonce = document.getElementById('enonce').value.trim();
+      const duree = parseInt(document.getElementById('duree').value) || 0;
+      const note = parseFloat(document.getElementById('note').value) || 0;
+
+      if (!enonce) {
+        alert("L'énoncé est obligatoire.");
+        return;
+      }
+
+      let options = [], bonnesReponses = [];
+
+      if (type === 'qcm') {
+        const texts = document.querySelectorAll('.option-text');
+        const checks = document.querySelectorAll('.checkbox');
+        texts.forEach((input, i) => {
+          const val = input.value.trim();
+          if (val) {
+            options.push(val);
+            if (checks[i].checked) bonnesReponses.push(options.length - 1);
+          }
+        });
+
+        if (options.length < 2) {
+          alert("Un QCM doit contenir au moins 2 options.");
+          return;
+        }
+
+        if (bonnesReponses.length === 0) {
+          alert("Veuillez cocher au moins une bonne réponse.");
+          return;
+        }
+      }
+
+      const formData = new FormData();
+      formData.append('examId', examIdInput);
+      formData.append('type', type);
+      formData.append('enonce', enonce);
+      formData.append('note', note);
+      formData.append('duree', duree);
+      if (type === 'qcm') {
+        formData.append('options', JSON.stringify(options));
+        formData.append('bonnesReponses', JSON.stringify(bonnesReponses));
+      }
+
+      const mediaFile = document.getElementById('media').files[0];
+      if (mediaFile) {
+        formData.append('media', mediaFile);
+      }
+
+      try {
+        const res = await fetch('http://localhost:5000/api/questions/qcm', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (res.ok) {
+          alert('Question ajoutée avec succès !');
+          location.reload();
+        } else {
+          const err = await res.json();
+          alert('Erreur : ' + err.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Erreur réseau lors de l\'envoi.');
+      }
+    }
+  </script>
+</body>
+</html>

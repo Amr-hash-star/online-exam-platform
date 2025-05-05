@@ -3,8 +3,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const authRoutes = require('./routes/authRoutes'); // Importation des routes d'authentification
-const examRoutes = require('./routes/examRoutes'); // Routes de gestion des examens
+const path = require('path');
+const authRoutes = require('./routes/authRoutes');
+const examRoutes = require('./routes/examRoutes');
+const questionRoutes = require('./routes/questionRoutes');
 
 // Chargement des variables d'environnement depuis le fichier .env
 dotenv.config();
@@ -13,28 +15,38 @@ dotenv.config();
 const app = express();
 
 // Middlewares
-app.use(cors()); // Permet d'accepter les requêtes provenant d'autres domaines (CORS)
-app.use(express.json()); // Permet de lire le corps des requêtes en JSON
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static('uploads'));
 
-// Routes d'authentification
-app.use('/api/auth', authRoutes); // Toutes les routes définies dans authRoutes commencent par /api/auth
-app.use('/api/exams', examRoutes); // Toutes les routes définies dans examRoutes commencent par /api/exams
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/exams', examRoutes);
+app.use('/api/questions', questionRoutes);
 
-// Route de test pour vérifier si le serveur fonctionne
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-// Vérifie que la variable d'environnement est bien chargée
-console.log('MONGO_URI:', process.env.MONGO_URI);
-
-// Connexion à la base de données MongoDB
-mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log('MongoDB connected'))
-.catch((err) => console.error('MongoDB connection failed:', err));
-
-// Démarrage du serveur sur le port spécifié
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.get('/exam/:code', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'questions.html'));
 });
+
+// Vérification de l'URI lue depuis .env
+console.log("MONGO_URI:", process.env.MONGO_URI);
+
+// Connexion à MongoDB avec options recommandées
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log('✅ MongoDB connected');
+    
+    // Démarrer le serveur seulement après connexion réussie
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('❌ MongoDB connection failed:', err.message);
+  });

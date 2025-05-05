@@ -13,7 +13,7 @@ Ce projet est une plateforme d'examen en ligne permettant aux enseignants de cr�
 ## Technologies utilisées
 
 - **Backend** : Node.js, Express.js
-- **Frontend** : HTML, CSS, JavaScript (DOM)
+- **Frontend** : HTML, CSS, et JavaScript (DOM)
 - **Base de données** : MongoDB
 - **Authentification** : JWT
 - **Versioning** : GitHub
@@ -58,7 +58,7 @@ Ce projet est une plateforme d'examen en ligne permettant aux enseignants de cr�
 
    Bootstrap :
 
-- Bootstrap n’est pas utilisé dans ce projet.
+- Bootstrap est aussi utilisé dans ce projet.
 
 - Vous pouvez ajouter une feuille de style externe si vous le souhaitez (CDN dans <head>), mais ce n’est pas obligatoire.
 

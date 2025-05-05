@@ -33,4 +33,20 @@ exports.getAllExams = async (req, res) => {
       res.status(500).json({ message: 'Erreur lors de la récupération des examens', error: err.message });
     }
   };
+
+  exports.getExamByCode = async (req, res) => {
+    try {
+      const code = req.params.code;
   
+      // On cherche un examen dont le lienAcces se termine par ce code
+      const exam = await Exam.findOne({ lienAcces: { $regex: `${code}$` } });
+  
+      if (!exam) {
+        return res.status(404).json({ message: 'Examen introuvable' });
+      }
+  
+      res.status(200).json(exam);
+    } catch (err) {
+      res.status(500).json({ message: 'Erreur lors de la recherche de l\'examen', error: err.message });
+    }
+  };  
