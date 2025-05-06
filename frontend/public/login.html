@@ -24,6 +24,7 @@
   <div id="message"></div>
 
   <script>
+    // NE PAS MODIFIER CE SCRIPT — il envoie les infos au backend pour se connecter
     const form = document.getElementById('loginForm');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -42,12 +43,26 @@
         const messageDiv = document.getElementById('message');
 
         if (response.ok) {
+          messageDiv.innerHTML = `<p style="color:green;">${result.message}</p>`;
+
+          // Stockage du token et redirection selon le rôle
+          localStorage.setItem('token', result.token);
+          localStorage.setItem('userType', result.user.typeUtilisateur);
+
+          if (result.user.typeUtilisateur === 'Enseignant') {
+            window.location.href = 'create_exam.html';
+          } else {
+            window.location.href = 'etudiant_home.html';
+          }
           messageDiv.innerHTML = `<p style="color:lightgreen;">${result.message}</p>`;
         } else {
+          messageDiv.innerHTML = `<p style="color:red;">${result.message || 'Erreur lors de la connexion.'}</p>`;
           messageDiv.innerHTML = `<p style="color:pink;">${result.message || 'Erreur lors de la connexion.'}</p>`;
         }
+
       } catch (error) {
         console.error('Erreur:', error);
+        document.getElementById('message').innerHTML = `<p style="color:red;">Erreur réseau ou serveur.</p>`;
       }
     });
   </script>
