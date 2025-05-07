@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Modifier une question</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background-color: #f5f5f5;
+    }
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    form {
+      max-width: 700px;
+      margin: auto;
+      background-color: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .options-container {
+      margin-top: 10px;
+    }
+    .option-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <h2>Modifier la question</h2>
+  <form id="modifierForm">
+    <label>Enoncé :</label>
+    <input type="text" id="enonce" required />
+
+    <label>Type :</label>
+    <select id="type" required>
+      <option value="qcm">QCM</option>
+      <option value="directe">Directe</option>
+    </select>
+
+    <div id="qcmFields" style="display: none;">
+      <label>Options :</label>
+      <div class="options-container" id="optionsContainer">
+        <!-- Options dynamiques ici -->
+      </div>
+      <button type="button" onclick="ajouterOption()">+ Ajouter option</button>
+    </div>
+
+    <div id="directeFields" style="display: none;">
+      <label>Réponse attendue :</label>
+      <input type="text" id="reponse" />
+
+      <label>Tolérance (caractères) :</label>
+      <input type="number" id="tolerance" min="0" />
+    </div>
+
+    <label>Note :</label>
+    <input type="number" id="note" step="0.1" min="0" />
+
+    <label>Durée (en minutes) :</label>
+    <input type="number" id="duree" min="0" />
+
+    <label>Média (URL ou nom de fichier) :</label>
+    <input type="text" id="media" />
+
+    <button type="submit">Enregistrer les modifications</button>
+  </form>
+
+  <script>
+    const id = new URLSearchParams(window.location.search).get("id");
+    if (!id) {
+      console.error("Erreur : ID de la question introuvable !");
+      alert("Erreur : ID de la question est invalide.");
+      return;
+    }
+
+
+    let bonnesReponses = [];
+
+    async function chargerQuestion() {
+      try {
+        const res = await fetch(`http://localhost:5000/api/questions/question/${id}`);
+        const question = await res.json();
+
+        document.getElementById("enonce").value = question.enonce || "";
+        document.getElementById("type").value = question.type || "qcm";
+        document.getElementById("note").value = question.note || "";
+        document.getElementById("duree").value = question.duree || "";
+        document.getElementById("media").value = question.media || "";
+
+        if (question.type === "qcm") {
+          document.getElementById("qcmFields").style.display = "block";
+          document.getElementById("directeFields").style.display = "none";
+          bonnesReponses = question.bonnesReponses || [];
+          afficherOptions(question.options || []);
+        } else {
+          document.getElementById("qcmFields").style.display = "none";
+          document.getElementById("directeFields").style.display = "block";
+          document.getElementById("reponse").value = question.reponse || "";
+          document.getElementById("tolerance").value = question.tolerance || 0;
+        }
+      } catch (err) {
+        alert("Erreur lors du chargement de la question.");
+        console.error(err);
+      }
+    }
+
+    function afficherOptions(options) {
+      const container = document.getElementById("optionsContainer");
+      container.innerHTML = "";
+      options.forEach(opt => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "option-wrapper";
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "option-input";
+        input.value = opt;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = bonnesReponses.includes(opt);
+        checkbox.onchange = () => {
+          if (checkbox.checked && !bonnesReponses.includes(input.value)) {
+            bonnesReponses.push(input.value);
+          } else if (!checkbox.checked) {
+            bonnesReponses = bonnesReponses.filter(r => r !== input.value);
+          }
+        };
+
+        // Mettre à jour bonnesReponses si l'utilisateur modifie le texte
+        input.addEventListener("input", () => {
+          const index = bonnesReponses.indexOf(opt);
+          if (index !== -1) {
+            bonnesReponses[index] = input.value;
+          }
+        });
+
+        wrapper.appendChild(input);
+        wrapper.appendChild(checkbox);
+        container.appendChild(wrapper);
+      });
+    }
+
+    function ajouterOption() {
+      const wrapper = document.createElement("div");
+      wrapper.className = "option-wrapper";
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "option-input";
+      input.placeholder = "Nouvelle option";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.onchange = () => {
+        if (checkbox.checked && !bonnesReponses.includes(input.value)) {
+          bonnesReponses.push(input.value);
+        } else if (!checkbox.checked) {
+          bonnesReponses = bonnesReponses.filter(r => r !== input.value);
+        }
+      };
+
+      input.addEventListener("input", () => {
+        if (checkbox.checked && !bonnesReponses.includes(input.value)) {
+          bonnesReponses.push(input.value);
+        }
+      });
+
+      wrapper.appendChild(input);
+      wrapper.appendChild(checkbox);
+      document.getElementById("optionsContainer").appendChild(wrapper);
+    }
+
+    document.getElementById("type").addEventListener("change", (e) => {
+      if (e.target.value === "qcm") {
+        document.getElementById("qcmFields").style.display = "block";
+        document.getElementById("directeFields").style.display = "none";
+      } else {
+        document.getElementById("qcmFields").style.display = "none";
+        document.getElementById("directeFields").style.display = "block";
+      }
+    });
+
+    document.getElementById("modifierForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const type = document.getElementById("type").value;
+
+      const data = {
+        enonce: document.getElementById("enonce").value,
+        type,
+        note: document.getElementById("note").value,
+        duree: document.getElementById("duree").value,
+        media: document.getElementById("media").value,
+      };
+
+      if (type === "qcm") {
+        const options = Array.from(document.querySelectorAll(".option-input"))
+          .map(input => input.value)
+          .filter(opt => opt.trim() !== "");
+
+        data.options = options;
+        data.bonnesReponses = bonnesReponses.filter(r => options.includes(r));
+      } else {
+        data.reponse = document.getElementById("reponse").value;
+        data.tolerance = Number(document.getElementById("tolerance").value);
+      }
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/questions/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        if (res.ok) {
+          const { examId } = await res.json();
+          alert("Question modifiée avec succès !");
+          window.location.href = `questions.html?examId=${examId}`;
+        } else {
+          alert("Erreur lors de la modification.");
+        }
+      } catch (err) {
+        alert("Erreur réseau.");
+        console.error(err);
+      }
+    });
+
+    chargerQuestion();
+  </script>
+</body>
+</html>

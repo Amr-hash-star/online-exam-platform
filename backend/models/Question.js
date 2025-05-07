@@ -28,6 +28,14 @@ const questionSchema = new mongoose.Schema({
     type: [Number], // Indices des bonnes réponses dans le tableau options
     default: []
   },
+   // Champs pour les questions directes
+   reponseDirecte: {
+    type: String
+  },
+  tolerance: {
+    type: Number,
+    default: 0
+  },
   note: {
     type: Number,
     required: true

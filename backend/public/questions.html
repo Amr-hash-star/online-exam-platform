@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Questions QCM</title>
+  <title>Questions QCM et Directe de l'examen</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -87,113 +87,160 @@
   </style>
 </head>
 <body>
-  <h1>Questions QCM de l'examen</h1>
+  <h1>Questions QCM et Directe de l'examen</h1>
   <div id="questions-container"></div>
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        let examId = null;
-        const urlParams = new URLSearchParams(window.location.search);
+  try {
+    let examId = null;
+    const urlParams = new URLSearchParams(window.location.search);
 
-        if (urlParams.get('examId')) {
-          examId = urlParams.get('examId');
-        } else {
-          const code = window.location.pathname.split('/').pop();
-          examId = code;
-          const res = await fetch(`http://localhost:5000/api/exams`);
-          const exams = await res.json();
-          const matched = exams.find(e => e.lienAcces.endsWith(code));
-          if (matched) examId = matched._id;
+    if (urlParams.get('examId')) {
+      examId = urlParams.get('examId');
+    } else {
+      const code = window.location.pathname.split('/').pop();
+      examId = code;
+      const res = await fetch(`http://localhost:5000/api/exams`);
+      const exams = await res.json();
+      const matched = exams.find(e => e.lienAcces.endsWith(code));
+      if (matched) examId = matched._id;
+    }
+
+    if (!examId || examId.includes('.html') || examId.length < 24) {
+      console.error("Erreur : examId est invalide ! Valeur reçue :", examId);
+      document.body.innerHTML = "<h2>Examen introuvable</h2>";
+      return;
+    }
+
+
+
+    const res = await fetch(`http://localhost:5000/api/questions/exam/${examId}`);
+    if (!res.ok) throw new Error("Erreur lors de la récupération des questions");
+
+    const questions = await res.json();
+    console.log("Questions récupérées :", questions);
+
+    const container = document.getElementById('questions-container');
+
+    if (!questions.length) {
+      container.innerHTML = "<p>Aucune question trouvée pour cet examen.</p>";
+      return;
+    }
+
+    questions.forEach(q => {
+      const div = document.createElement('div');
+      div.className = 'question';
+
+      const h3 = document.createElement('h3');
+      h3.textContent = q.enonce;
+      div.appendChild(h3);
+
+      // Affichage du média si disponible
+      if (q.media) {
+        const ext = q.media.split('.').pop().toLowerCase();
+        const mediaUrl = `http://localhost:5000/${q.media}`;
+
+        if (['png', 'jpg', 'jpeg', 'gif'].includes(ext)) {
+          const img = document.createElement('img');
+          img.src = mediaUrl;
+          img.alt = "media";
+          img.style.maxWidth = "300px";
+          img.style.cursor = "pointer";
+          img.onclick = () => {
+            document.getElementById('imgPreview').src = mediaUrl;
+            document.getElementById('imgModal').style.display = 'block';
+          };
+          div.appendChild(img);
+        } else if (['mp3', 'wav', 'ogg'].includes(ext)) {
+          const audio = document.createElement('audio');
+          audio.controls = true;
+          audio.src = mediaUrl;
+          div.appendChild(audio);
+        } else if (['mp4', 'webm'].includes(ext)) {
+          const video = document.createElement('video');
+          video.controls = true;
+          video.width = 300;
+          const source = document.createElement('source');
+          source.src = mediaUrl;
+          source.type = `video/${ext}`;
+          video.appendChild(source);
+          div.appendChild(video);
         }
-
-        if (!examId) {
-          document.body.innerHTML = "<h2>Examen introuvable</h2>";
-          return;
-        }
-
-        const res = await fetch(`http://localhost:5000/api/questions/exam/${examId}`);
-        if (!res.ok) throw new Error("Erreur lors de la récupération des questions");
-
-        const questions = await res.json();
-        console.log("Questions récupérées :", questions);
-
-        const container = document.getElementById('questions-container');
-
-        if (!questions.length) {
-          container.innerHTML = "<p>Aucune question trouvée pour cet examen.</p>";
-          return;
-        }
-
-        questions.forEach(q => {
-          if (q.type.toLowerCase() === 'qcm') {
-            const div = document.createElement('div');
-            div.className = 'question';
-
-            const h3 = document.createElement('h3');
-            h3.textContent = q.enonce;
-            div.appendChild(h3);
-
-            if (q.media) {
-              const ext = q.media.split('.').pop().toLowerCase();
-              const mediaUrl = `http://localhost:5000/${q.media}`;
-
-              if (['png', 'jpg', 'jpeg', 'gif'].includes(ext)) {
-                const img = document.createElement('img');
-                img.src = mediaUrl;
-                img.alt = "media";
-                img.style.maxWidth = "300px";
-                img.style.cursor = "pointer";
-                img.onclick = () => {
-                  document.getElementById('imgPreview').src = mediaUrl;
-                  document.getElementById('imgModal').style.display = 'block';
-                };
-                div.appendChild(img);
-              } else if (['mp3', 'wav', 'ogg'].includes(ext)) {
-                const audio = document.createElement('audio');
-                audio.controls = true;
-                audio.src = mediaUrl;
-                div.appendChild(audio);
-              } else if (['mp4', 'webm'].includes(ext)) {
-                const video = document.createElement('video');
-                video.controls = true;
-                video.width = 300;
-                const source = document.createElement('source');
-                source.src = mediaUrl;
-                source.type = `video/${ext}`;
-                video.appendChild(source);
-                div.appendChild(video);
-              }
-            }
-
-            const ul = document.createElement('ul');
-            if (Array.isArray(q.options) && q.options.length) {
-              q.options.forEach(opt => {
-                const li = document.createElement('li');
-                li.textContent = opt;
-                ul.appendChild(li);
-              });
-            } else {
-              const li = document.createElement('li');
-              li.textContent = "Aucune option disponible";
-              ul.appendChild(li);
-            }
-            div.appendChild(ul);
-
-            const p = document.createElement('p');
-            p.innerHTML = `<strong>Note :</strong> ${q.note ?? 'Non spécifiée'} | <strong>Durée :</strong> ${q.duree ?? 'Non spécifiée'} min`;
-            div.appendChild(p);
-
-            container.appendChild(div);
-          }
-        });
-
-      } catch (err) {
-        console.error("Erreur :", err);
-        document.body.innerHTML = "<h2>Une erreur est survenue lors du chargement des questions.</h2>";
       }
+
+      // Affichage des questions selon le type
+      if (q.type.toLowerCase() === 'qcm') {
+        const ul = document.createElement('ul');
+        if (Array.isArray(q.options) && q.options.length) {
+          q.options.forEach(opt => {
+            const li = document.createElement('li');
+            li.textContent = opt;
+            ul.appendChild(li);
+          });
+        } else {
+          const li = document.createElement('li');
+          li.textContent = "Aucune option disponible";
+          ul.appendChild(li);
+        }
+        div.appendChild(ul);
+      } else if (q.type.toLowerCase() === 'directe') {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = "Votre réponse ici...";
+        input.style.width = "100%";
+        input.style.padding = "10px";
+        input.style.marginTop = "10px";
+        input.style.borderRadius = "5px";
+        input.style.border = "1px solid #ccc";
+        div.appendChild(input);
+      }
+
+      const p = document.createElement('p');
+      p.innerHTML = `<strong>Note :</strong> ${q.note ?? 'Non spécifiée'} | <strong>Durée :</strong> ${q.duree ?? 'Non spécifiée'} min`;
+      div.appendChild(p);
+
+      // 🔧 Boutons Modifier et Supprimer
+      const btns = document.createElement('div');
+      btns.style.marginTop = '15px';
+
+      const btnModifier = document.createElement('button');
+      btnModifier.textContent = 'Modifier';
+      btnModifier.style.marginRight = '10px';
+      btnModifier.onclick = () => {
+        window.location.href = `modifier_question.html?id=${q._id}`;
+      };
+
+      const btnSupprimer = document.createElement('button');
+      btnSupprimer.textContent = 'Supprimer';
+      btnSupprimer.style.backgroundColor = '#e74c3c';
+      btnSupprimer.style.color = 'white';
+      btnSupprimer.onclick = async () => {
+        if (confirm('Voulez-vous vraiment supprimer cette question ?')) {
+          const delRes = await fetch(`http://localhost:5000/api/questions/${q._id}`, { method: 'DELETE' });
+          if (delRes.ok) {
+            alert('Question supprimée');
+            window.location.reload();
+          } else {
+            alert('Erreur lors de la suppression');
+          }
+        }
+      };
+
+      btns.appendChild(btnModifier);
+      btns.appendChild(btnSupprimer);
+      div.appendChild(btns);
+
+      container.appendChild(div);
     });
+
+  } catch (err) {
+    console.error("Erreur :", err);
+    document.body.innerHTML = "<h2>Une erreur est survenue lors du chargement des questions.</h2>";
+  }
+});
   </script>
+
   <div id="imgModal" class="modal">
     <span class="modal-close" onclick="document.getElementById('imgModal').style.display='none'">&times;</span>
     <img class="modal-content" id="imgPreview">

@@ -14,6 +14,7 @@
   <div style="text-align: right;">
     <button id="logoutBtn" style="background-color: red; color: white; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer;">Se déconnecter</button>
   </div>
+
   <h1>Ajouter une question à un examen</h1>
 
   <label>Examen ID (copie depuis /api/exams ou lien généré) :</label>
@@ -31,18 +32,29 @@
   <label>Ajouter un média :</label>
   <input type="file" id="media">
 
+  <!-- QCM -->
   <div id="qcm-options">
     <label>Options (coche les bonnes réponses) :</label>
     <div id="options-list"></div>
     <button type="button" onclick="ajouterOption()">Ajouter une option</button>
+  </div>
 
-    <label>Durée (en secondes) :</label>
+  <!-- Directe -->
+  <div id="directe-options" class="hidden">
+    <label>Réponse attendue :</label>
+    <input type="text" id="reponseDirecte">
+
+    <label>Taux de tolérance (en %, ex: 10) :</label>
+    <input type="number" id="tolerance" min="0" max="100">
+  </div>
+
+  <!-- Commun -->
+  <label>Durée (en secondes) :</label>
   <input type="number" id="duree" min="0">
 
   <label>Note :</label>
   <input type="number" id="note" min="0" step="0.5">
-  
-  </div>
+
   <br><br>
   <button onclick="soumettreQuestion()">Soumettre la question</button>
 
@@ -50,13 +62,19 @@
     const typeSelect = document.getElementById('type');
     const optionsList = document.getElementById('options-list');
     const qcmOptions = document.getElementById('qcm-options');
+    const directeOptions = document.getElementById('directe-options');
 
+    // Affichage conditionnel au changement
     typeSelect.addEventListener('change', () => {
-      qcmOptions.style.display = typeSelect.value === 'qcm' ? 'block' : 'none';
+      const isQCM = typeSelect.value === 'qcm';
+      qcmOptions.style.display = isQCM ? 'block' : 'none';
+      directeOptions.style.display = !isQCM ? 'block' : 'none';
     });
 
-    // Cache initialement si le type n'est pas QCM
-    qcmOptions.style.display = typeSelect.value === 'qcm' ? 'block' : 'none';
+    // Affichage initial selon valeur sélectionnée
+    const isQCMInit = typeSelect.value === 'qcm';
+    qcmOptions.style.display = isQCMInit ? 'block' : 'none';
+    directeOptions.style.display = !isQCMInit ? 'block' : 'none';
 
     function ajouterOption() {
       const index = optionsList.children.length;
@@ -72,7 +90,7 @@
     async function soumettreQuestion() {
       let examIdInput = document.getElementById('examId').value.trim();
 
-      // Si l'utilisateur entre un lien, on extrait le code
+      // Si c'est un lien, extraire le code
       if (examIdInput.startsWith('http')) {
         const code = examIdInput.split('/').pop();
         try {
@@ -90,7 +108,6 @@
         }
       }
 
-      // Vérification de validité de l'ObjectId
       if (!/^[0-9a-fA-F]{24}$/.test(examIdInput)) {
         alert("L'ID d'examen semble invalide.");
         return;
@@ -106,11 +123,19 @@
         return;
       }
 
-      let options = [], bonnesReponses = [];
+      const formData = new FormData();
+      formData.append('examId', examIdInput);
+      formData.append('type', type);
+      formData.append('enonce', enonce);
+      formData.append('note', note);
+      formData.append('duree', duree);
 
       if (type === 'qcm') {
         const texts = document.querySelectorAll('.option-text');
         const checks = document.querySelectorAll('.checkbox');
+
+        const options = [], bonnesReponses = [];
+
         texts.forEach((input, i) => {
           const val = input.value.trim();
           if (val) {
@@ -123,22 +148,26 @@
           alert("Un QCM doit contenir au moins 2 options.");
           return;
         }
-
         if (bonnesReponses.length === 0) {
           alert("Veuillez cocher au moins une bonne réponse.");
           return;
         }
-      }
 
-      const formData = new FormData();
-      formData.append('examId', examIdInput);
-      formData.append('type', type);
-      formData.append('enonce', enonce);
-      formData.append('note', note);
-      formData.append('duree', duree);
-      if (type === 'qcm') {
         formData.append('options', JSON.stringify(options));
         formData.append('bonnesReponses', JSON.stringify(bonnesReponses));
+      }
+
+      if (type === 'directe') {
+        const reponse = document.getElementById('reponseDirecte').value.trim();
+        const tolerance = parseFloat(document.getElementById('tolerance').value) || 0;
+
+        if (!reponse) {
+          alert("Veuillez entrer la réponse attendue.");
+          return;
+        }
+
+        formData.append('reponse', reponse);
+        formData.append('tolerance', tolerance);
       }
 
       const mediaFile = document.getElementById('media').files[0];
@@ -147,7 +176,8 @@
       }
 
       try {
-        const res = await fetch('http://localhost:5000/api/questions/qcm', {
+        const endpoint = type === 'qcm' ? 'qcm' : 'directe';
+        const res = await fetch(`http://localhost:5000/api/questions/${endpoint}`, {
           method: 'POST',
           body: formData
         });
@@ -161,7 +191,7 @@
         }
       } catch (err) {
         console.error(err);
-        alert('Erreur réseau lors de l\'envoi.');
+        alert("Erreur réseau lors de l'envoi.");
       }
     }
   </script>
