@@ -17,13 +17,13 @@
       <option value="directe">Directe</option>
     </select>
 
-    <div id="qcmFields" style="display: none;">
+    <div id="qcmFields" class="fade-slide" style="display: none;">
       <label>Options :</label>
       <div class="options-container" id="optionsContainer"></div>
       <button type="button" onclick="ajouterOption()">+ Ajouter option</button>
     </div>
 
-    <div id="directeFields" style="display: none;">
+    <div id="directeFields" class="fade-slide" style="display: none;">
       <label>Réponse attendue :</label>
       <input type="text" id="reponse" />
 
@@ -44,7 +44,6 @@
   </form>
 
   <script>
-    // Tout ton JavaScript ici (inchangé)
     const id = new URLSearchParams(window.location.search).get("id");
     if (!id) {
       console.error("Erreur : ID de la question introuvable !");
@@ -53,6 +52,19 @@
     }
 
     let bonnesReponses = [];
+
+    function toggleVisibility(element, show) {
+      if (show) {
+        element.style.display = "block";
+        requestAnimationFrame(() => element.classList.add("fade-slide", "show"));
+      } else {
+        element.classList.remove("fade-slide");
+        setTimeout(() => {
+          element.classList.remove("show");
+          element.style.display = "none";
+        }, 400);
+      }
+    }
 
     async function chargerQuestion() {
       try {
@@ -66,13 +78,13 @@
         document.getElementById("media").value = question.media || "";
 
         if (question.type === "qcm") {
-          document.getElementById("qcmFields").style.display = "block";
-          document.getElementById("directeFields").style.display = "none";
+          toggleVisibility(document.getElementById("qcmFields"), true);
+          toggleVisibility(document.getElementById("directeFields"), false);
           bonnesReponses = question.bonnesReponses || [];
           afficherOptions(question.options || []);
         } else {
-          document.getElementById("qcmFields").style.display = "none";
-          document.getElementById("directeFields").style.display = "block";
+          toggleVisibility(document.getElementById("qcmFields"), false);
+          toggleVisibility(document.getElementById("directeFields"), true);
           document.getElementById("reponse").value = question.reponse || "";
           document.getElementById("tolerance").value = question.tolerance || 0;
         }
@@ -148,14 +160,20 @@
       document.getElementById("optionsContainer").appendChild(wrapper);
     }
 
+    function feedbackAnimation(type) {
+      document.body.style.animation = type === 'success'
+        ? 'bgFlashSuccess 1s ease'
+        : 'bgFlashError 1s ease';
+      setTimeout(() => {
+        document.body.style.animation = '';
+      }, 1000);
+    }
+
     document.getElementById("type").addEventListener("change", (e) => {
-      if (e.target.value === "qcm") {
-        document.getElementById("qcmFields").style.display = "block";
-        document.getElementById("directeFields").style.display = "none";
-      } else {
-        document.getElementById("qcmFields").style.display = "none";
-        document.getElementById("directeFields").style.display = "block";
-      }
+      const qcm = document.getElementById("qcmFields");
+      const directe = document.getElementById("directeFields");
+      toggleVisibility(qcm, e.target.value === "qcm");
+      toggleVisibility(directe, e.target.value === "directe");
     });
 
     document.getElementById("modifierForm").addEventListener("submit", async (e) => {
@@ -192,12 +210,15 @@
 
         if (res.ok) {
           const { examId } = await res.json();
+          feedbackAnimation("success");
           alert("Question modifiée avec succès !");
           window.location.href = `questions.html?examId=${examId}`;
         } else {
+          feedbackAnimation("error");
           alert("Erreur lors de la modification.");
         }
       } catch (err) {
+        feedbackAnimation("error");
         alert("Erreur réseau.");
         console.error(err);
       }
