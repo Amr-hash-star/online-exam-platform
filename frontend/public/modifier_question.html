@@ -45,9 +45,11 @@
 
   <script>
     const id = new URLSearchParams(window.location.search).get("id");
-    if (!id) {
-      console.error("Erreur : ID de la question introuvable !");
-      alert("Erreur : ID de la question est invalide.");
+    const examId = new URLSearchParams(window.location.search).get("examId");
+    
+    if (!id || !examId) {
+      console.error("Erreur : ID de la question ou examId manquant !");
+      alert("Erreur : ID de la question ou examId est invalide.");
       return;
     }
 
@@ -209,7 +211,6 @@
         });
 
         if (res.ok) {
-          const { examId } = await res.json();
           feedbackAnimation("success");
           alert("Question modifiée avec succès !");
           window.location.href = `questions.html?examId=${examId}`;
