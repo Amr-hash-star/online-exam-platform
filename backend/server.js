@@ -8,16 +8,27 @@ const authRoutes = require('./routes/authRoutes');
 const examRoutes = require('./routes/examRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 
+
 // Chargement des variables d'environnement depuis le fichier .env
 dotenv.config();
 
 // Création d'une instance Express
 const app = express();
 
+
+
 // Middlewares
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+
+
+// Pour servir les fichiers HTML du frontend
+app.use(express.static(path.join(__dirname, '../frontend/public')));
+// Ajout de la route spécifique pour examen.html
+app.get('/examen.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'frontend', 'public', 'examen.html'));
+  });
+// Sert les fichiers uploadés (images, sons, etc.)
 app.use('/uploads', express.static('uploads'));
 
 // Routes

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Examen Étudiant</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    #message {
+      margin-top: 20px;
+      color: red;
+    }
+    #exam-link-section {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Examen</h1>
+
+  <!-- Section de saisie de l'URL/code d'examen -->
+  <div id="exam-link-section">
+    <p>Entrez le lien ou code d'examen :</p>
+    <input type="text" id="examLinkInput" placeholder="ex : http://localhost:5000/exam/ma8q1r9n ou juste le code">
+    <button onclick="demarrerExamen()">Commencer l'examen</button>
+  </div>
+
+  <div id="message"></div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const userType = localStorage.getItem('userType');
+
+    if (!token || userType !== 'Etudiant') {
+      alert('Accès réservé aux étudiants connectés.');
+      window.location.href = 'login.html';
+    }
+
+    async function demarrerExamen() {
+      const input = document.getElementById('examLinkInput').value.trim();
+      if (!input) {
+        alert('Veuillez entrer un lien ou un code d\'examen.');
+        return;
+      }
+
+      // Extraire le code depuis une URL ou juste un code
+      let code;
+      if (input.startsWith('http')) {
+        const parts = input.split('/');
+        code = parts[parts.length - 1];
+      } else {
+        code = input;
+      }
+
+      try {
+        // Vérifier si l'examen existe via le backend
+        const examResponse = await fetch(`http://localhost:5000/api/exams/code/${code}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (!examResponse.ok) throw new Error('Examen introuvable.');
+        const exam = await examResponse.json();
+        const examId = exam._id;
+
+        // Demande de géolocalisation
+        if (!navigator.geolocation) {
+          document.getElementById('message').textContent = "La géolocalisation n'est pas supportée par ce navigateur.";
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+
+          // Envoi au backend
+          const geoRes = await fetch(`http://localhost:5000/api/exams/geolocalisation`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              examId,
+              latitude,
+              longitude
+            })
+          });
+
+          if (!geoRes.ok) throw new Error("Erreur lors de l'envoi des coordonnées.");
+
+          // Succès
+          document.getElementById('message').style.color = 'green';
+          document.getElementById('message').textContent = "Géolocalisation enregistrée avec succès. Prêt pour la suite.";
+
+        }, (error) => {
+          document.getElementById('message').textContent = "Géolocalisation refusée ou erreur : " + error.message;
+        });
+
+      } catch (err) {
+        document.getElementById('message').style.color = 'red';
+        document.getElementById('message').textContent = "Erreur : " + err.message;
+      }
+    }
+  </script>
+</body>
+</html>

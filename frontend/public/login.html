@@ -55,7 +55,7 @@
           if (result.user.typeUtilisateur === 'Enseignant') {
             window.location.href = 'create_exam.html';
           } else {
-            window.location.href = 'etudiant_home.html';
+            window.location.href = 'http://localhost:5000/examen.html';
           }
         } else {
           messageDiv.innerHTML = `<p style="color:red;">${result.message || 'Erreur lors de la connexion.'}</p>`;
