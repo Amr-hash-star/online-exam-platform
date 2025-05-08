@@ -3,60 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Modifier une question</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-      background-color: #f5f5f5;
-    }
-    h2 {
-      text-align: center;
-      color: #2c3e50;
-    }
-    form {
-      max-width: 700px;
-      margin: auto;
-      background-color: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    input[type="text"],
-    input[type="number"],
-    select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    .options-container {
-      margin-top: 10px;
-    }
-    .option-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 5px;
-    }
-    button {
-      margin-top: 20px;
-      padding: 12px 20px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #2980b9;
-    }
-  </style>
+  <link rel="stylesheet" href="style4.css">
 </head>
 <body>
   <h2>Modifier la question</h2>
@@ -70,15 +17,13 @@
       <option value="directe">Directe</option>
     </select>
 
-    <div id="qcmFields" style="display: none;">
+    <div id="qcmFields" class="fade-slide" style="display: none;">
       <label>Options :</label>
-      <div class="options-container" id="optionsContainer">
-        <!-- Options dynamiques ici -->
-      </div>
+      <div class="options-container" id="optionsContainer"></div>
       <button type="button" onclick="ajouterOption()">+ Ajouter option</button>
     </div>
 
-    <div id="directeFields" style="display: none;">
+    <div id="directeFields" class="fade-slide" style="display: none;">
       <label>Réponse attendue :</label>
       <input type="text" id="reponse" />
 
@@ -106,8 +51,20 @@
       return;
     }
 
-
     let bonnesReponses = [];
+
+    function toggleVisibility(element, show) {
+      if (show) {
+        element.style.display = "block";
+        requestAnimationFrame(() => element.classList.add("fade-slide", "show"));
+      } else {
+        element.classList.remove("fade-slide");
+        setTimeout(() => {
+          element.classList.remove("show");
+          element.style.display = "none";
+        }, 400);
+      }
+    }
 
     async function chargerQuestion() {
       try {
@@ -121,13 +78,13 @@
         document.getElementById("media").value = question.media || "";
 
         if (question.type === "qcm") {
-          document.getElementById("qcmFields").style.display = "block";
-          document.getElementById("directeFields").style.display = "none";
+          toggleVisibility(document.getElementById("qcmFields"), true);
+          toggleVisibility(document.getElementById("directeFields"), false);
           bonnesReponses = question.bonnesReponses || [];
           afficherOptions(question.options || []);
         } else {
-          document.getElementById("qcmFields").style.display = "none";
-          document.getElementById("directeFields").style.display = "block";
+          toggleVisibility(document.getElementById("qcmFields"), false);
+          toggleVisibility(document.getElementById("directeFields"), true);
           document.getElementById("reponse").value = question.reponse || "";
           document.getElementById("tolerance").value = question.tolerance || 0;
         }
@@ -160,7 +117,6 @@
           }
         };
 
-        // Mettre à jour bonnesReponses si l'utilisateur modifie le texte
         input.addEventListener("input", () => {
           const index = bonnesReponses.indexOf(opt);
           if (index !== -1) {
@@ -204,14 +160,20 @@
       document.getElementById("optionsContainer").appendChild(wrapper);
     }
 
+    function feedbackAnimation(type) {
+      document.body.style.animation = type === 'success'
+        ? 'bgFlashSuccess 1s ease'
+        : 'bgFlashError 1s ease';
+      setTimeout(() => {
+        document.body.style.animation = '';
+      }, 1000);
+    }
+
     document.getElementById("type").addEventListener("change", (e) => {
-      if (e.target.value === "qcm") {
-        document.getElementById("qcmFields").style.display = "block";
-        document.getElementById("directeFields").style.display = "none";
-      } else {
-        document.getElementById("qcmFields").style.display = "none";
-        document.getElementById("directeFields").style.display = "block";
-      }
+      const qcm = document.getElementById("qcmFields");
+      const directe = document.getElementById("directeFields");
+      toggleVisibility(qcm, e.target.value === "qcm");
+      toggleVisibility(directe, e.target.value === "directe");
     });
 
     document.getElementById("modifierForm").addEventListener("submit", async (e) => {
@@ -248,12 +210,15 @@
 
         if (res.ok) {
           const { examId } = await res.json();
+          feedbackAnimation("success");
           alert("Question modifiée avec succès !");
           window.location.href = `questions.html?examId=${examId}`;
         } else {
+          feedbackAnimation("error");
           alert("Erreur lors de la modification.");
         }
       } catch (err) {
+        feedbackAnimation("error");
         alert("Erreur réseau.");
         console.error(err);
       }

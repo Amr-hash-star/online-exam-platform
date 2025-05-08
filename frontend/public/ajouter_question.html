@@ -3,60 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <title>Ajouter une question</title>
-  <style>
-    body { font-family: Arial; margin: 20px; }
-    label { font-weight: bold; display: block; margin-top: 10px; }
-    .option { margin-bottom: 5px; }
-    .hidden { display: none; }
-  </style>
+  <link rel="stylesheet" href="style3.css">
 </head>
 <body>
-  <div style="text-align: right;">
-    <button id="logoutBtn" style="background-color: red; color: white; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer;">Se déconnecter</button>
+  <div class="container">
+    <div style="text-align: right;">
+      <button id="logoutBtn">Se déconnecter</button>
+    </div>
+
+    <h1>Ajouter une question à un examen</h1>
+
+    <label>Examen ID (copie depuis /api/exams ou lien généré) :</label>
+    <input type="text" id="examId" required>
+
+    <label>Type de question :</label>
+    <select id="type">
+      <option value="qcm">QCM</option>
+      <option value="directe">Question directe</option>
+    </select>
+
+    <label>Énoncé :</label>
+    <textarea id="enonce" rows="3"></textarea>
+
+    <label>Ajouter un média :</label>
+    <input type="file" id="media">
+
+    <!-- QCM -->
+    <div id="qcm-options">
+      <label>Options (coche les bonnes réponses) :</label>
+      <div id="options-list"></div>
+      <button type="button" onclick="ajouterOption()">Ajouter une option</button>
+    </div>
+
+    <!-- Directe -->
+    <div id="directe-options" class="hidden">
+      <label>Réponse attendue :</label>
+      <input type="text" id="reponseDirecte">
+
+      <label>Taux de tolérance (en %, ex: 10) :</label>
+      <input type="number" id="tolerance" min="0" max="100">
+    </div>
+
+    <!-- Commun -->
+    <label>Durée (en secondes) :</label>
+    <input type="number" id="duree" min="0">
+
+    <label>Note :</label>
+    <input type="number" id="note" min="0" step="0.5">
+
+    <button onclick="soumettreQuestion()">Soumettre la question</button>
   </div>
-
-  <h1>Ajouter une question à un examen</h1>
-
-  <label>Examen ID (copie depuis /api/exams ou lien généré) :</label>
-  <input type="text" id="examId" required>
-
-  <label>Type de question :</label>
-  <select id="type">
-    <option value="qcm">QCM</option>
-    <option value="directe">Question directe</option>
-  </select>
-
-  <label>Énoncé :</label>
-  <textarea id="enonce" rows="3" cols="50"></textarea>
-
-  <label>Ajouter un média :</label>
-  <input type="file" id="media">
-
-  <!-- QCM -->
-  <div id="qcm-options">
-    <label>Options (coche les bonnes réponses) :</label>
-    <div id="options-list"></div>
-    <button type="button" onclick="ajouterOption()">Ajouter une option</button>
-  </div>
-
-  <!-- Directe -->
-  <div id="directe-options" class="hidden">
-    <label>Réponse attendue :</label>
-    <input type="text" id="reponseDirecte">
-
-    <label>Taux de tolérance (en %, ex: 10) :</label>
-    <input type="number" id="tolerance" min="0" max="100">
-  </div>
-
-  <!-- Commun -->
-  <label>Durée (en secondes) :</label>
-  <input type="number" id="duree" min="0">
-
-  <label>Note :</label>
-  <input type="number" id="note" min="0" step="0.5">
-
-  <br><br>
-  <button onclick="soumettreQuestion()">Soumettre la question</button>
 
   <script>
     const typeSelect = document.getElementById('type');
@@ -90,7 +86,6 @@
     async function soumettreQuestion() {
       let examIdInput = document.getElementById('examId').value.trim();
 
-      // Si c'est un lien, extraire le code
       if (examIdInput.startsWith('http')) {
         const code = examIdInput.split('/').pop();
         try {
@@ -194,6 +189,13 @@
         alert("Erreur réseau lors de l'envoi.");
       }
     }
+
+    // Déconnexion
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userType');
+      window.location.href = 'login.html';
+    });
   </script>
 </body>
 </html>

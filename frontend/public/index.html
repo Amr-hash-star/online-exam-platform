@@ -1,52 +1,42 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <title>Inscription</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style1.css">
 </head>
+
 <body>
-  <!-- Lien de navigation vers la page de connexion -->
-  <nav>
-    <strong>Inscription</strong> | <a href="login.html">Connexion</a>
-  </nav>
-
-  <h1>Inscription</h1>
-
-  <!-- NE PAS MODIFIER L'ID DU FORMULAIRE -->
-  <!-- Le backend s'appuie sur cet ID pour envoyer les données -->
+  <div class="logo">OEP</div>
+  <h1>Formulaire d'inscription</h1>
   <form id="registerForm">
-    <!-- Champs du formulaire à styliser si besoin, mais ne pas changer les attributs "name" -->
     <input type="text" name="email" placeholder="Email" required><br>
     <input type="text" name="nom" placeholder="Nom" required><br>
     <input type="text" name="prenom" placeholder="Prénom" required><br>
     <input type="date" name="dateNaissance" required><br>
-
     <select name="sexe" required>
       <option value="">-- Sélectionnez le sexe --</option>
       <option value="Homme">Homme</option>
       <option value="Femme">Femme</option>
     </select><br>
-
     <input type="text" name="etablissement" placeholder="Établissement" required><br>
     <input type="text" name="filiere" placeholder="Filière" required><br>
-
     <select name="typeUtilisateur" required>
       <option value="">-- Type d'utilisateur --</option>
       <option value="Etudiant">Étudiant</option>
       <option value="Enseignant">Enseignant</option>
     </select><br>
-
     <input type="password" name="password" placeholder="Mot de passe" required><br>
-
     <button type="submit">S'inscrire</button>
+    <div class="login-link">
+      <p>Déjà inscrit ? <a href="login.html">Connexion</a></p>
+    </div>
   </form>
 
-  <!-- Zone où s'affiche le message de succès ou d'erreur -->
   <div id="message"></div>
 
   <script>
-    // NE PAS MODIFIER CE SCRIPT — il gère l'envoi des données au backend Node.js
     const form = document.getElementById('registerForm');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -66,8 +56,10 @@
 
         if (response.ok) {
           messageDiv.innerHTML = `<p style="color:green;">${result.message}</p>`;
+          alert("Utilisateur créé avec succès.");
         } else {
           messageDiv.innerHTML = `<p style="color:red;">${result.message || result.errors.map(err => err.msg).join(', ')}</p>`;
+          alert("Cet email est déjà utilisé.");
         }
       } catch (error) {
         console.error('Erreur:', error);
@@ -75,4 +67,5 @@
     });
   </script>
 </body>
+
 </html>

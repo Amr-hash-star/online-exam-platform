@@ -1,55 +1,101 @@
-/* 
-----------------------------------------
+* {
+  box-sizing: border-box;
+}
 
- Ce fichier est utilisé pour styliser toutes les pages HTML comme :
-   - index.html (inscription)
-   - login.html (connexion)
-
-  Tu peux modifier :
-   - les couleurs, polices, marges, alignements
-   - l’apparence des boutons, formulaires, titres, etc.
-
-  Ne modifie pas :
-   - les ID (#registerForm, #loginForm, #message)
-   - les balises <form>, <input>, <select>, <button>
-   - les attributs HTML (name, id)
-
- ❗Le backend s'appuie sur ces éléments pour fonctionner correctement.
-
-----------------------------------------
-*/
-
-/* Style général du corps de la page */
 body {
+  font-family: "Poppins", sans-serif;
+  background: url("img-logreg.png") no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  min-height: 90vh;
+  position: relative;
+}
 
-  }
-  
-  /* Titre principal */
-  h1 {
+.logo {
+  position: absolute;
+  top: 20px;
+  left: 30px;
+  font-size: 2em;
+  color: white;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px 15px;
+  border-radius: 10px;
+}
 
-  }
-  
-  /* Formulaire stylisé */
-  form {
-    
-  }
-  
-  /* Champs du formulaire */
-  input, select {
-    
-  }
-  
-  /* Bouton principal */
-  button {
-    
-  }
-  
-  button:hover {
-    
-  }
-  
-  /* Zone de message (succès ou erreur) */
-  #message {
-    
-  }
-  
+h1 {
+  color: #fff;
+  margin-top: 100px;
+  margin-bottom: 20px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+form {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 30px 40px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  color: #fff;
+}
+
+input,
+select,
+button {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input:focus,
+select:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+button {
+  background: #3498db;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+  border: none;
+}
+
+button:hover {
+  background: #2980b9;
+}
+
+#message {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-link {
+  margin-top: 10px;
+  text-align: center;
+  color: #fff;
+}
+
+.login-link a {
+  color: #fff;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+p {
+  font-size: 16px;
+}
