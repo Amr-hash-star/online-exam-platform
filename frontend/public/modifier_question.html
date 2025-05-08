@@ -3,60 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Modifier une question</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-      background-color: #f5f5f5;
-    }
-    h2 {
-      text-align: center;
-      color: #2c3e50;
-    }
-    form {
-      max-width: 700px;
-      margin: auto;
-      background-color: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    input[type="text"],
-    input[type="number"],
-    select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    .options-container {
-      margin-top: 10px;
-    }
-    .option-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 5px;
-    }
-    button {
-      margin-top: 20px;
-      padding: 12px 20px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #2980b9;
-    }
-  </style>
+  <link rel="stylesheet" href="style4.css">
 </head>
 <body>
   <h2>Modifier la question</h2>
@@ -72,9 +19,7 @@
 
     <div id="qcmFields" style="display: none;">
       <label>Options :</label>
-      <div class="options-container" id="optionsContainer">
-        <!-- Options dynamiques ici -->
-      </div>
+      <div class="options-container" id="optionsContainer"></div>
       <button type="button" onclick="ajouterOption()">+ Ajouter option</button>
     </div>
 
@@ -99,13 +44,13 @@
   </form>
 
   <script>
+    // Tout ton JavaScript ici (inchangé)
     const id = new URLSearchParams(window.location.search).get("id");
     if (!id) {
       console.error("Erreur : ID de la question introuvable !");
       alert("Erreur : ID de la question est invalide.");
       return;
     }
-
 
     let bonnesReponses = [];
 
@@ -160,7 +105,6 @@
           }
         };
 
-        // Mettre à jour bonnesReponses si l'utilisateur modifie le texte
         input.addEventListener("input", () => {
           const index = bonnesReponses.indexOf(opt);
           if (index !== -1) {
