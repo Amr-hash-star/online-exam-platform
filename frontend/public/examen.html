@@ -12,12 +12,16 @@
     #exam-link-section {
       margin-top: 30px;
     }
+    img, video, audio {
+      display: block;
+      margin-top: 10px;
+      max-width: 90%;
+    }
   </style>
 </head>
 <body>
   <h1>Examen</h1>
 
-  <!-- Section de saisie de l'URL/code d'examen -->
   <div id="exam-link-section">
     <p>Entrez le lien ou code d'examen :</p>
     <input type="text" id="examLinkInput" placeholder="ex : http://localhost:5000/exam/ma8q1r9n ou juste le code">
@@ -42,7 +46,6 @@
         return;
       }
 
-      // Extraire le code depuis une URL ou juste un code
       let code;
       if (input.startsWith('http')) {
         const parts = input.split('/');
@@ -52,7 +55,6 @@
       }
 
       try {
-        // Vérifier si l'examen existe via le backend
         const examResponse = await fetch(`http://localhost:5000/api/exams/code/${code}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -61,7 +63,6 @@
         const exam = await examResponse.json();
         const examId = exam._id;
 
-        // Demande de géolocalisation
         if (!navigator.geolocation) {
           document.getElementById('message').textContent = "La géolocalisation n'est pas supportée par ce navigateur.";
           return;
@@ -71,25 +72,29 @@
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
 
-          // Envoi au backend
           const geoRes = await fetch(`http://localhost:5000/api/exams/geolocalisation`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify({
-              examId,
-              latitude,
-              longitude
-            })
+            body: JSON.stringify({ examId, latitude, longitude })
           });
 
           if (!geoRes.ok) throw new Error("Erreur lors de l'envoi des coordonnées.");
 
-          // Succès
           document.getElementById('message').style.color = 'green';
           document.getElementById('message').textContent = "Géolocalisation enregistrée avec succès. Prêt pour la suite.";
+
+          const questionsRes = await fetch(`http://localhost:5000/api/questions/exam/${examId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          if (!questionsRes.ok) throw new Error("Impossible de récupérer les questions.");
+          const questions = await questionsRes.json();
+
+          window.questions = questions;
+          demarrerAffichageQuestions(questions, examId);
 
         }, (error) => {
           document.getElementById('message').textContent = "Géolocalisation refusée ou erreur : " + error.message;
@@ -99,6 +104,129 @@
         document.getElementById('message').style.color = 'red';
         document.getElementById('message').textContent = "Erreur : " + err.message;
       }
+    }
+
+    let currentIndex = 0;
+    const reponsesEtudiant = [];
+
+    function demarrerAffichageQuestions(questions, examId) {
+      document.body.innerHTML = ''; // Nettoyer tout
+      const questionDiv = document.createElement('div');
+      questionDiv.id = 'questionContainer';
+      document.body.appendChild(questionDiv);
+      afficherQuestion(questions, questionDiv, examId);
+    }
+
+    function afficherQuestion(questions, container, examId) {
+      if (currentIndex >= questions.length) {
+        fetch('http://localhost:5000/api/exams/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            examId,
+            reponses: reponsesEtudiant
+          })
+        }).then(() => {
+          window.location.href = 'score.html';
+        }).catch(() => {
+          alert("Erreur lors de l'envoi des réponses.");
+        });
+        return;
+      }
+
+      const question = questions[currentIndex];
+      container.innerHTML = '';
+
+      const questionTitle = document.createElement('h2');
+      questionTitle.textContent = `Question ${currentIndex + 1}: ${question.enonce}`;
+      container.appendChild(questionTitle);
+
+      // 🔹 Affichage image
+      if (question.media) {
+        const extension = question.media.split('.').pop().toLowerCase();
+
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
+          const img = document.createElement('img');
+          img.src = `http://localhost:5000/${question.media}`;
+          img.alt = 'Illustration';
+          container.appendChild(img);
+        } else if (['mp3', 'wav', 'ogg'].includes(extension)) {
+          const audio = document.createElement('audio');
+          audio.controls = true;
+          audio.src = `http://localhost:5000/${question.media}`;
+          container.appendChild(audio);
+        } else if (['mp4', 'webm', 'ogg'].includes(extension)) {
+          const video = document.createElement('video');
+          video.controls = true;
+          video.src = `http://localhost:5000/${question.media}`;
+          container.appendChild(video);
+        }
+      }
+
+
+      if (question.type === 'qcm') {
+        question.options.forEach(choix => {
+          const label = document.createElement('label');
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = 'reponse';
+          radio.value = choix;
+          label.appendChild(radio);
+          label.appendChild(document.createTextNode(choix));
+          container.appendChild(label);
+          container.appendChild(document.createElement('br'));
+        });
+      } else {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'reponseDirecte';
+        container.appendChild(input);
+      }
+
+      const duree = question.duree || 10;
+      let tempsRestant = duree;
+      const timerElement = document.createElement('p');
+      timerElement.style.color = 'blue';
+      container.appendChild(timerElement);
+
+      const interval = setInterval(() => {
+        timerElement.textContent = `Temps restant : ${tempsRestant} sec`;
+        tempsRestant--;
+        if (tempsRestant < 0) {
+          clearInterval(interval);
+          enregistrerEtAfficherSuivante(question, questions, container, examId);
+        }
+      }, 1000);
+
+      const boutonSuivant = document.createElement('button');
+      boutonSuivant.textContent = "Suivant";
+      boutonSuivant.onclick = () => {
+        clearInterval(interval);
+        enregistrerEtAfficherSuivante(question, questions, container, examId);
+      };
+      container.appendChild(boutonSuivant);
+    }
+
+    function enregistrerEtAfficherSuivante(question, questions, container, examId) {
+      let reponse;
+      if (question.type === 'qcm') {
+        const checked = document.querySelector('input[name="reponse"]:checked');
+        reponse = checked ? checked.value : null;
+      } else {
+        const input = document.getElementById('reponseDirecte');
+        reponse = input ? input.value.trim() : '';
+      }
+
+      reponsesEtudiant.push({
+        questionId: question._id,
+        reponse
+      });
+
+      currentIndex++;
+      afficherQuestion(questions, container, examId);
     }
   </script>
 </body>
