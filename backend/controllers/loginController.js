@@ -19,9 +19,11 @@ exports.loginUser = async (req, res) => {
     // Génération du token JWT
     const token = jwt.sign(
       { userId: user._id, role: user.typeUtilisateur },
-      'secret-key', // À remplacer en prod par une vraie clé
-      { expiresIn: '1h' }
+      process.env.JWT_SECRET, // À remplacer en prod par une vraie clé
+      { expiresIn: '3h' }
     );
+    console.log("Token généré avec JWT_SECRET =", process.env.JWT_SECRET);
+
 
     res.status(200).json({
       message: "Connexion réussie.",

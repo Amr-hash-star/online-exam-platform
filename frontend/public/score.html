@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Score de l'examen</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      text-align: center;
+      margin-top: 50px;
+      font-family: Arial, sans-serif;
+    }
+    #score {
+      font-size: 2em;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>Résultat de l'examen</h1>
+  <div id="score">Calcul en cours...</div>
+
+  <script>
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      alert('Non autorisé');
+      window.location.href = 'login.html';
+    }
+
+    async function fetchEtAfficherScore() {
+      try {
+        console.log("Token récupéré :", token);
+        const res = await fetch('http://localhost:5000/api/exams/resultat', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.status === 401) {
+          alert("Session expirée, veuillez vous reconnecter.");
+          window.location.href = 'login.html';
+          return;
+        }
+
+
+        if (!res.ok) throw new Error("Erreur lors du calcul du score.");
+
+        const data = await res.json();
+        document.getElementById('score').textContent = `Votre score : ${data.score}/100`;
+      } catch (err) {
+        document.getElementById('score').textContent = 'Erreur : ' + err.message;
+      }
+    }
+
+    fetchEtAfficherScore();
+  </script>
+</body>
+</html>

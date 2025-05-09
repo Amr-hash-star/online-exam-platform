@@ -72,13 +72,20 @@
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
 
+          const token = localStorage.getItem('token'); // récupère le token JWT
+          console.log('Token JWT envoyé :', token);
+
           const geoRes = await fetch(`http://localhost:5000/api/exams/geolocalisation`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify({ examId, latitude, longitude })
+            body : JSON.stringify({
+              examId: examId,
+              latitude: latitude,
+              longitude: longitude
+            })
           });
 
           if (!geoRes.ok) throw new Error("Erreur lors de l'envoi des coordonnées.");
@@ -224,6 +231,21 @@
         questionId: question._id,
         reponse
       });
+
+      // 🛠️ 🔥 Ajoute la soumission au serveur
+      fetch('http://localhost:5000/api/exams/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          examId: examId,
+          reponses: reponsesEtudiant
+        })
+      }).then(response => response.json())
+        .then(data => console.log("✅ Réponse enregistrée :", data))
+        .catch(error => console.error("❌ Erreur lors de la soumission :", error));
 
       currentIndex++;
       afficherQuestion(questions, container, examId);
