@@ -3,32 +3,417 @@
 <head>
   <meta charset="UTF-8">
   <title>Examen Étudiant</title>
-  <link rel="stylesheet" href="style5.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    #message {
-      margin-top: 20px;
-      color: red;
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    :root {
+      --primary: #4361ee;
+      --secondary: #3f37c9;
+      --success: #4cc9f0;
+      --warning: #f72585;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --border-radius: 10px;
+      --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
     }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      padding: 30px;
+      color: var(--dark);
+      line-height: 1.6;
+    }
+    
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+      color: var(--primary);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      animation: fadeInDown 0.8s ease-out;
+    }
+    
+    h2 {
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+      color: var(--dark);
+      font-weight: 600;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
     #exam-link-section {
+      background-color: white;
+      border-radius: var(--border-radius);
+      padding: 30px;
+      box-shadow: var(--box-shadow);
+      margin-bottom: 30px;
+      animation: fadeInUp 0.6s ease both;
+    }
+    
+    #examLinkInput {
+      width: 100%;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      margin: 15px 0;
+      font-size: 16px;
+      transition: var(--transition);
+    }
+    
+    #examLinkInput:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+    
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    button:hover {
+      background-color: var(--secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    button i {
+      margin-right: 8px;
+    }
+    
+    #message {
+      padding: 15px;
+      border-radius: var(--border-radius);
+      margin-top: 20px;
+      font-weight: 500;
+      text-align: center;
+    }
+    
+    .message-error {
+      background-color: rgba(247, 37, 133, 0.1);
+      color: var(--warning);
+      border-left: 4px solid var(--warning);
+    }
+    
+    .message-success {
+      background-color: rgba(76, 201, 240, 0.1);
+      color: var(--success);
+      border-left: 4px solid var(--success);
+    }
+    
+    #questionContainer {
+      background-color: white;
+      border-radius: var(--border-radius);
+      padding: 30px;
+      box-shadow: var(--box-shadow);
+      margin-top: 30px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeInUp 0.6s ease both;
+    }
+    
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 15px;
+    }
+    
+    .question-num {
+      background-color: var(--primary);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+    
+    .question-title {
+      display: flex;
+      align-items: center;
+      font-size: 1.2rem;
+      flex-grow: 1;
+    }
+    
+    .timer-container {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin-left: 20px;
+      flex-shrink: 0;
+    }
+    
+    .progress-ring {
+      transform: rotate(-90deg);
+      transform-origin: center;
+    }
+    
+    .progress-ring-circle {
+      stroke: #ddd;
+      fill: transparent;
+      stroke-width: 6;
+    }
+    
+    .progress-ring-circle-progress {
+      stroke: var(--primary);
+      fill: transparent;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.3s;
+    }
+    
+    .timer-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .timer-low {
+      color: var(--warning);
+    }
+    
+    .timer-low .progress-ring-circle-progress {
+      stroke: var(--warning);
+    }
+    
+    .media-container {
+      margin: 20px 0;
+      text-align: center;
+    }
+    
+    img, video {
+      max-width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+    }
+    
+    audio {
+      width: 100%;
+      margin: 15px 0;
+    }
+    
+    .options-container {
+      margin: 25px 0;
+    }
+    
+    .option-item {
+      background-color: #f8f9fa;
+      border: 2px solid #eee;
+      border-radius: var(--border-radius);
+      padding: 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .option-item:hover {
+      border-color: #ddd;
+      background-color: #f1f3f5;
+    }
+    
+    .option-item input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+    
+    .option-item .radio-custom {
+      width: 22px;
+      height: 22px;
+      border: 2px solid #ddd;
+      border-radius: 50%;
+      margin-right: 15px;
+      position: relative;
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+    
+    .option-item input[type="radio"]:checked + .radio-custom {
+      border-color: var(--primary);
+    }
+    
+    .option-item input[type="radio"]:checked + .radio-custom:after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: var(--primary);
+    }
+    
+    .option-item.selected {
+      border-color: var(--primary);
+      background-color: rgba(67, 97, 238, 0.05);
+    }
+    
+    .text-input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #eee;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      transition: var(--transition);
+      margin-top: 15px;
+    }
+    
+    .text-input:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+    
+    .buttons-container {
+      display: flex;
+      justify-content: flex-end;
       margin-top: 30px;
     }
-    img, video, audio {
-      display: block;
-      margin-top: 10px;
-      max-width: 90%;
+    
+    .progress-bar-container {
+      background-color: #eee;
+      height: 6px;
+      border-radius: 3px;
+      margin-bottom: 30px;
+      overflow: hidden;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background-color: var(--primary);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+    
+    .pulse {
+      animation: pulse 1s infinite;
+    }
+    
+    .fade-in {
+      animation: fadeInUp 0.5s ease both;
+    }
+    
+    .option-item.correct {
+      border-color: #4cc9f0;
+      background-color: rgba(76, 201, 240, 0.1);
+    }
+    
+    .option-item.incorrect {
+      border-color: #f72585;
+      background-color: rgba(247, 37, 133, 0.05);
+    }
+    
+    .success-screen {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .success-icon {
+      font-size: 5rem;
+      color: var(--success);
+      margin-bottom: 20px;
+      animation: fadeInDown 0.8s ease;
+    }
+    
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #f72585;
+      opacity: 0.7;
+      border-radius: 0;
+      animation: fall 3s linear infinite;
     }
   </style>
 </head>
 <body>
-  <h1>Examen</h1>
+  <div class="container">
+    <h1>Examen Étudiant</h1>
 
-  <div id="exam-link-section">
-    <p>Entrez le lien ou code d'examen :</p>
-    <input type="text" id="examLinkInput" placeholder="ex : http://localhost:5000/exam/ma8q1r9n ou juste le code">
-    <button onclick="demarrerExamen()">Commencer l'examen</button>
+    <div id="exam-link-section">
+      <p>Entrez le lien ou code d'examen pour commencer :</p>
+      <input type="text" id="examLinkInput" placeholder="ex : http://localhost:5000/exam/ma8q1r9n ou juste le code">
+      <button onclick="demarrerExamen()"><i class="fas fa-play"></i> Commencer l'examen</button>
+    </div>
+
+    <div id="message"></div>
   </div>
-
-  <div id="message"></div>
 
   <script>
     const token = localStorage.getItem('token');
@@ -42,7 +427,7 @@
     async function demarrerExamen() {
       const input = document.getElementById('examLinkInput').value.trim();
       if (!input) {
-        alert('Veuillez entrer un lien ou un code d\'examen.');
+        showMessage('Veuillez entrer un lien ou un code d\'examen.', 'error');
         return;
       }
 
@@ -55,6 +440,9 @@
       }
 
       try {
+        // Afficher un message de chargement
+        showMessage('Chargement de l\'examen...', 'success');
+        
         const examResponse = await fetch(`http://localhost:5000/api/exams/code/${code}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -64,15 +452,17 @@
         const examId = exam._id;
 
         if (!navigator.geolocation) {
-          document.getElementById('message').textContent = "La géolocalisation n'est pas supportée par ce navigateur.";
+          showMessage("La géolocalisation n'est pas supportée par ce navigateur.", 'error');
           return;
         }
 
+        showMessage('Localisation en cours...', 'success');
+        
         navigator.geolocation.getCurrentPosition(async (position) => {
           const latitude = position.coords.latitude;
           const longitude = position.coords.longitude;
 
-          const token = localStorage.getItem('token'); // récupère le token JWT
+          const token = localStorage.getItem('token');
           console.log('Token JWT envoyé :', token);
 
           const geoRes = await fetch(`http://localhost:5000/api/exams/geolocalisation`, {
@@ -90,8 +480,7 @@
 
           if (!geoRes.ok) throw new Error("Erreur lors de l'envoi des coordonnées.");
 
-          document.getElementById('message').style.color = 'green';
-          document.getElementById('message').textContent = "Géolocalisation enregistrée avec succès. Prêt pour la suite.";
+          showMessage("Géolocalisation enregistrée avec succès. Chargement des questions...", 'success');
 
           const questionsRes = await fetch(`http://localhost:5000/api/questions/exam/${examId}`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -100,128 +489,268 @@
           if (!questionsRes.ok) throw new Error("Impossible de récupérer les questions.");
           const questions = await questionsRes.json();
 
+          if (questions.length === 0) {
+            showMessage("Cet examen ne contient aucune question.", 'error');
+            return;
+          }
+
           window.questions = questions;
+          window.examTitle = exam.titre;
           demarrerAffichageQuestions(questions, examId);
 
         }, (error) => {
-          document.getElementById('message').textContent = "Géolocalisation refusée ou erreur : " + error.message;
+          showMessage("Géolocalisation refusée ou erreur : " + error.message, 'error');
         });
 
       } catch (err) {
-        document.getElementById('message').style.color = 'red';
-        document.getElementById('message').textContent = "Erreur : " + err.message;
+        showMessage("Erreur : " + err.message, 'error');
       }
+    }
+
+    function showMessage(text, type) {
+      const messageElement = document.getElementById('message');
+      messageElement.textContent = text;
+      messageElement.className = type === 'error' ? 'message-error' : 'message-success';
+      messageElement.style.display = 'block';
     }
 
     let currentIndex = 0;
     const reponsesEtudiant = [];
+    let timerInterval;
+    let progressTimer;
+    let examTitle = '';
 
     function demarrerAffichageQuestions(questions, examId) {
-      document.body.innerHTML = ''; // Nettoyer tout
+      document.querySelector('.container').innerHTML = ''; 
+      
+      const container = document.querySelector('.container');
+      
+      // Barre de progression globale
+      const progressContainer = document.createElement('div');
+      progressContainer.className = 'progress-bar-container';
+      const progressBar = document.createElement('div');
+      progressBar.className = 'progress-bar';
+      progressBar.style.width = '0%';
+      progressContainer.appendChild(progressBar);
+      container.appendChild(progressContainer);
+      
+      // Titre de l'examen
+      const examTitleElement = document.createElement('h1');
+      examTitleElement.textContent = window.examTitle || 'Examen';
+      container.appendChild(examTitleElement);
+      
       const questionDiv = document.createElement('div');
       questionDiv.id = 'questionContainer';
-      document.body.appendChild(questionDiv);
-      afficherQuestion(questions, questionDiv, examId);
+      container.appendChild(questionDiv);
+      
+      afficherQuestion(questions, questionDiv, examId, progressBar);
     }
 
-    function afficherQuestion(questions, container, examId) {
+    function afficherQuestion(questions, container, examId, progressBar) {
       if (currentIndex >= questions.length) {
-        fetch('http://localhost:5000/api/exams/submit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            examId,
-            reponses: reponsesEtudiant
-          })
-        }).then(() => {
-          window.location.href = 'score.html';
-        }).catch(() => {
-          alert("Erreur lors de l'envoi des réponses.");
-        });
+        // Animation finale de progression
+        progressBar.style.width = '100%';
+        
+        // Arrêter les timers
+        clearInterval(timerInterval);
+        clearInterval(progressTimer);
+        
+        // Afficher l'écran de fin
+        afficherFinExamen(container, examId);
         return;
       }
 
+      // Mettre à jour la barre de progression
+      progressBar.style.width = `${(currentIndex / questions.length) * 100}%`;
+      
       const question = questions[currentIndex];
       container.innerHTML = '';
+      container.className = 'fade-in';
+      
+      // En-tête de question avec numéro et titre
+      const questionHeader = document.createElement('div');
+      questionHeader.className = 'question-header';
+      
+      const questionTitle = document.createElement('div');
+      questionTitle.className = 'question-title';
+      
+      const questionNum = document.createElement('div');
+      questionNum.className = 'question-num';
+      questionNum.textContent = currentIndex + 1;
+      
+      const questionText = document.createElement('h2');
+      questionText.textContent = question.enonce;
+      
+      questionTitle.appendChild(questionNum);
+      questionTitle.appendChild(questionText);
+      
+      // Timer circulaire
+      const timerContainer = document.createElement('div');
+      timerContainer.className = 'timer-container';
+      
+      const timerSVG = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      timerSVG.classList.add('progress-ring');
+      timerSVG.setAttribute('width', '80');
+      timerSVG.setAttribute('height', '80');
+      
+      const radius = 35;
+      const circumference = 2 * Math.PI * radius;
+      
+      const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      bgCircle.classList.add('progress-ring-circle');
+      bgCircle.setAttribute('cx', '40');
+      bgCircle.setAttribute('cy', '40');
+      bgCircle.setAttribute('r', radius);
+      
+      const progressCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      progressCircle.classList.add('progress-ring-circle-progress');
+      progressCircle.setAttribute('cx', '40');
+      progressCircle.setAttribute('cy', '40');
+      progressCircle.setAttribute('r', radius);
+      progressCircle.setAttribute('stroke-dasharray', circumference);
+      progressCircle.setAttribute('stroke-dashoffset', '0');
+      
+      timerSVG.appendChild(bgCircle);
+      timerSVG.appendChild(progressCircle);
+      timerContainer.appendChild(timerSVG);
+      
+      const timerText = document.createElement('div');
+      timerText.className = 'timer-text';
+      timerContainer.appendChild(timerText);
+      
+      questionHeader.appendChild(questionTitle);
+      questionHeader.appendChild(timerContainer);
+      container.appendChild(questionHeader);
 
-      const questionTitle = document.createElement('h2');
-      questionTitle.textContent = `Question ${currentIndex + 1}: ${question.enonce}`;
-      container.appendChild(questionTitle);
-
-      // 🔹 Affichage image
+      // Afficher le média si présent
       if (question.media) {
+        const mediaContainer = document.createElement('div');
+        mediaContainer.className = 'media-container';
+        
         const extension = question.media.split('.').pop().toLowerCase();
 
         if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
           const img = document.createElement('img');
           img.src = `http://localhost:5000/${question.media}`;
           img.alt = 'Illustration';
-          container.appendChild(img);
+          mediaContainer.appendChild(img);
         } else if (['mp3', 'wav', 'ogg'].includes(extension)) {
           const audio = document.createElement('audio');
           audio.controls = true;
           audio.src = `http://localhost:5000/${question.media}`;
-          container.appendChild(audio);
+          mediaContainer.appendChild(audio);
         } else if (['mp4', 'webm', 'ogg'].includes(extension)) {
           const video = document.createElement('video');
           video.controls = true;
           video.src = `http://localhost:5000/${question.media}`;
-          container.appendChild(video);
+          mediaContainer.appendChild(video);
         }
+        
+        container.appendChild(mediaContainer);
       }
 
+      // Conteneur pour les options
+      const optionsContainer = document.createElement('div');
+      optionsContainer.className = 'options-container';
 
+      // Afficher la question selon son type
       if (question.type === 'qcm') {
-        question.options.forEach(choix => {
-          const label = document.createElement('label');
+        question.options.forEach((choix, index) => {
+          const optionItem = document.createElement('label');
+          optionItem.className = 'option-item';
+          
           const radio = document.createElement('input');
           radio.type = 'radio';
           radio.name = 'reponse';
           radio.value = choix;
-          label.appendChild(radio);
-          label.appendChild(document.createTextNode(choix));
-          container.appendChild(label);
-          container.appendChild(document.createElement('br'));
+          radio.addEventListener('change', function() {
+            // Supprimer la classe selected de tous les éléments
+            document.querySelectorAll('.option-item').forEach(item => {
+              item.classList.remove('selected');
+            });
+            
+            // Ajouter la classe selected à l'élément parent
+            optionItem.classList.add('selected');
+          });
+          
+          const radioCustom = document.createElement('span');
+          radioCustom.className = 'radio-custom';
+          
+          const optionText = document.createElement('span');
+          optionText.textContent = choix;
+          
+          optionItem.appendChild(radio);
+          optionItem.appendChild(radioCustom);
+          optionItem.appendChild(optionText);
+          
+          optionsContainer.appendChild(optionItem);
         });
       } else {
         const input = document.createElement('input');
         input.type = 'text';
         input.id = 'reponseDirecte';
-        container.appendChild(input);
+        input.className = 'text-input';
+        input.placeholder = 'Votre réponse...';
+        optionsContainer.appendChild(input);
       }
+      
+      container.appendChild(optionsContainer);
 
-      const duree = question.duree || 10;
+      // Bouton suivant
+      const buttonsContainer = document.createElement('div');
+      buttonsContainer.className = 'buttons-container';
+      
+      const boutonSuivant = document.createElement('button');
+      boutonSuivant.innerHTML = currentIndex === questions.length - 1 ? 
+        '<i class="fas fa-check"></i> Terminer' : 
+        '<i class="fas fa-arrow-right"></i> Suivant';
+      boutonSuivant.onclick = () => {
+        clearInterval(timerInterval);
+        clearInterval(progressTimer);
+        enregistrerEtAfficherSuivante(question, questions, container, examId, progressBar);
+      };
+      
+      buttonsContainer.appendChild(boutonSuivant);
+      container.appendChild(buttonsContainer);
+
+      // Timer dynamique
+      const duree = question.duree || 30;
       let tempsRestant = duree;
-      const timerElement = document.createElement('p');
-      timerElement.style.color = 'blue';
-      container.appendChild(timerElement);
-
-      const interval = setInterval(() => {
-        timerElement.textContent = `Temps restant : ${tempsRestant} sec`;
+      
+      // Mettre à jour l'affichage initial
+      timerText.textContent = tempsRestant;
+      
+      // Calculer la valeur du dashoffset
+      progressCircle.style.strokeDashoffset = '0';
+      
+      // Démarrer le timer
+      timerInterval = setInterval(() => {
         tempsRestant--;
+        timerText.textContent = tempsRestant;
+        
+        // Mettre à jour le cercle de progression
+        const offset = circumference - (tempsRestant / duree) * circumference;
+        progressCircle.style.strokeDashoffset = offset;
+        
+        // Alerte visuelle quand il reste peu de temps
+        if (tempsRestant <= 5) {
+          timerContainer.classList.add('timer-low');
+          timerText.classList.add('pulse');
+        }
+        
         if (tempsRestant < 0) {
-          clearInterval(interval);
-          enregistrerEtAfficherSuivante(question, questions, container, examId);
+          clearInterval(timerInterval);
+          clearInterval(progressTimer);
+          enregistrerEtAfficherSuivante(question, questions, container, examId, progressBar);
         }
       }, 1000);
-
-      const boutonSuivant = document.createElement('button');
-      boutonSuivant.textContent = "Suivant";
-      boutonSuivant.onclick = () => {
-        clearInterval(interval);
-        enregistrerEtAfficherSuivante(question, questions, container, examId);
-      };
-      container.appendChild(boutonSuivant);
     }
 
-    function enregistrerEtAfficherSuivante(question, questions, container, examId) {
+    function enregistrerEtAfficherSuivante(question, questions, container, examId, progressBar) {
       let reponse;
       if (question.type === 'qcm') {
         const checked = document.querySelector('input[name="reponse"]:checked');
-        reponse = checked ? checked.value : null;
+        reponse = checked ? checked.value : '';
       } else {
         const input = document.getElementById('reponseDirecte');
         reponse = input ? input.value.trim() : '';
@@ -232,7 +761,7 @@
         reponse
       });
 
-      // 🛠️ 🔥 Ajoute la soumission au serveur
+      // Soumission au serveur
       fetch('http://localhost:5000/api/exams/submit', {
         method: 'POST',
         headers: {
@@ -248,7 +777,70 @@
         .catch(error => console.error("❌ Erreur lors de la soumission :", error));
 
       currentIndex++;
-      afficherQuestion(questions, container, examId);
+      afficherQuestion(questions, container, examId, progressBar);
+    }
+    
+    function afficherFinExamen(container, examId) {
+      container.innerHTML = '';
+      container.className = 'success-screen';
+      
+      // Animation de confettis
+      for (let i = 0; i < 50; i++) {
+        createConfetti(container);
+      }
+      
+      const icon = document.createElement('div');
+      icon.className = 'success-icon';
+      icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+      
+      const title = document.createElement('h2');
+      title.textContent = 'Examen terminé avec succès !';
+      
+      const message = document.createElement('p');
+      message.textContent = 'Vos réponses ont été enregistrées. Nous calculons votre score...';
+      
+      const redirectBtn = document.createElement('button');
+      redirectBtn.innerHTML = '<i class="fas fa-chart-bar"></i> Voir mon résultat';
+      redirectBtn.onclick = () => {
+        window.location.href = 'score.html';
+      };
+      
+      container.appendChild(icon);
+      container.appendChild(title);
+      container.appendChild(message);
+      
+      // Ajouter un délai avant d'afficher le bouton
+      setTimeout(() => {
+        container.appendChild(redirectBtn);
+      }, 1500);
+    }
+    
+    function createConfetti(container) {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      
+      // Positions et couleurs aléatoires
+      const left = Math.random() * 100;
+      const width = Math.random() * 10 + 5;
+      const height = Math.random() * 10 + 5;
+      const delay = Math.random() * 3;
+      
+      // Couleurs aléatoires
+      const colors = ['#4cc9f0', '#4361ee', '#3a0ca3', '#7209b7', '#f72585'];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      
+      confetti.style.left = `${left}%`;
+      confetti.style.width = `${width}px`;
+      confetti.style.height = `${height}px`;
+      confetti.style.backgroundColor = color;
+      confetti.style.animationDelay = `${delay}s`;
+      
+      container.appendChild(confetti);
+      
+      // Supprimer les confettis après l'animation
+      setTimeout(() => {
+        confetti.remove();
+      }, 3000 + (delay * 1000));
     }
   </script>
 </body>
