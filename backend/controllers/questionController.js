@@ -7,16 +7,23 @@ const createQCM = async (req, res) => {
     const { examId, enonce, options, bonnesReponses, note, duree } = req.body;
     const media = req.file ? req.file.path : null; // ✅ récupérer le chemin du fichier
 
+    const parsedOptions = JSON.parse(options);
+    const parsedBonnesReponses = JSON.parse(bonnesReponses);
+
+    // ✅ Convertir les indices en texte réel des options cochées
+    const bonnesReponsesTextuelles = parsedBonnesReponses.map(index => parsedOptions[index]);
+
     const question = new Question({
       examId,
       type: 'qcm',
       enonce,
       media,
-      options: JSON.parse(options),
-      bonnesReponses: JSON.parse(bonnesReponses),
+      options: parsedOptions,
+      bonnesReponses: bonnesReponsesTextuelles,
       note,
       duree
     });
+
 
     await question.save();
 
@@ -113,62 +120,42 @@ const updateQuestion = async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
-    
-    // Ajoutez des logs pour déboguer
-    console.log("Données reçues pour update:", data);
 
-    // Si le fichier est fourni, utiliser son chemin
     if (req.file) {
-      data.media = req.file.path;
-      console.log("Nouveau média:", data.media);
+      data.media = req.file.path; // ✅ mise à jour du média si nouveau fichier
     }
 
-    // Traitement correct des données JSON
-    try {
-      if (data.options && typeof data.options === 'string') {
-        data.options = JSON.parse(data.options);
-        console.log("Options parsées:", data.options);
-      }
-
-      if (data.bonnesReponses && typeof data.bonnesReponses === 'string') {
-        data.bonnesReponses = JSON.parse(data.bonnesReponses);
-        console.log("Bonnes réponses parsées:", data.bonnesReponses);
-      }
-    } catch (parseError) {
-      console.error("Erreur de parsing JSON:", parseError);
+    if (data.options) {
+      data.options = JSON.parse(data.options);
     }
+    
+    if (data.bonnesReponses) {
+      const parsedBonnesReponses = JSON.parse(data.bonnesReponses);
+    
+      // ✅ Si les options ont aussi été envoyées, transformer les indices en texte
+      if (data.options) {
+        data.bonnesReponses = parsedBonnesReponses.map(index => data.options[index]);
+      } else {
+        // Sinon on ne modifie pas (cas rare)
+        data.bonnesReponses = parsedBonnesReponses;
+      }
+    }
+    
 
-    // Pour les questions directes
     if (data.tolerance) {
       data.tolerance = parseFloat(data.tolerance);
     }
 
-    // Pour QCM on utilise les bonnes réponses
-    if (data.type === 'qcm') {
-      // S'assurer que le tableau est bien un array
-      if (!Array.isArray(data.bonnesReponses)) {
-        data.bonnesReponses = [];
-      }
-    }
-
-    console.log("Données à enregistrer:", data);
-
-    const updated = await Question.findByIdAndUpdate(
-      id, 
-      data, 
-      { new: true, runValidators: true }
-    );
+    const updated = await Question.findByIdAndUpdate(id, data, { new: true });
 
     if (!updated) {
-      console.log("Question non trouvée pour l'ID:", id);
       return res.status(404).json({ message: 'Question non trouvée' });
     }
 
-    console.log("Question mise à jour avec succès:", updated);
     res.status(200).json({ message: 'Question mise à jour', question: updated });
   } catch (error) {
     console.error('Erreur dans updateQuestion:', error);
-    res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+    res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
 

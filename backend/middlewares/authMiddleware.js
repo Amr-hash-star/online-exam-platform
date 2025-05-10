@@ -14,6 +14,10 @@ const authenticate = async (req, res, next) => {
   const token = authHeader.split(' ')[1];
   console.log("🔑 Token reçu :", token);
 
+  console.log("🔍 Vérification du token avant décodage :", token);
+  console.log("🔍 JWT_SECRET utilisé :", process.env.JWT_SECRET);
+
+
   try {
     console.log("🧪 Clé JWT utilisée :", process.env.JWT_SECRET);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

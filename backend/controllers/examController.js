@@ -25,7 +25,6 @@ exports.createExam = async (req, res) => {
   try {
     const { titre, description, publicCible } = req.body;
     const lienUnique = `${req.protocol}://${req.get('host')}/exam/${Date.now().toString(36)}`;
-
     const newExam = new Exam({ titre, description, publicCible, lienAcces: lienUnique });
     await newExam.save();
     res.status(201).json(newExam);
@@ -77,7 +76,7 @@ exports.enregistrerGeolocalisation = async (req, res) => {
   }
 };
 
-// ✅ Calcul du résultat de l’étudiant
+// ✅ Calcul du résultat de l’étudiant (corrigé)
 exports.getResultatEtudiant = async (req, res) => {
   const userId = req.user.id;
 
@@ -87,44 +86,76 @@ exports.getResultatEtudiant = async (req, res) => {
       .populate({
         path: 'reponses.questionId',
         model: 'Question'
-      })
-      
+      });
+
     if (!lastSubmission) {
       return res.status(404).json({ message: 'Aucune soumission trouvée pour cet utilisateur.' });
+    }
+
+    console.log("🔍 Liste des questions récupérées :", lastSubmission.reponses);
+
+    // 🔁 Supprimer les doublons de questions (par leur ID)
+    const vues = new Set();
+    const reponsesUniques = [];
+
+    for (const rep of lastSubmission.reponses) {
+      const questionId = rep.questionId._id.toString(); // S'assurer que c'est une string
+      if (!vues.has(questionId)) {
+        vues.add(questionId);
+        reponsesUniques.push(rep);
+      }
     }
 
     let scoreTotal = 0;
     let scoreMax = 0;
 
-    for (const rep of lastSubmission.reponses) {
+    for (const rep of reponsesUniques) {
       const question = rep.questionId;
       const reponseEtudiant = rep.reponse;
 
       if (!question || !question.note) continue;
+      if (!reponseEtudiant || reponseEtudiant.trim() === "") {
+        console.log(`⚠️ Aucune réponse donnée pour la question : ${question.enonce}`);
+        continue; // Ne pas prendre en compte cette question
+      }
+
       scoreMax += question.note;
 
       if (question.type === 'qcm') {
-        if (reponseEtudiant === question.reponseCorrecte) {
+        const bonneReponse = String(question.bonnesReponses[0]).trim().toLowerCase();
+        const reponse = String(reponseEtudiant).trim().toLowerCase();
+
+        console.log("🔎 Question:", question.enonce);
+        console.log("🔎 Réponse étudiant:", reponseEtudiant);
+        console.log("🔎 Bonne réponse attendue :", bonneReponse);
+
+        if (reponse === bonneReponse) {
           scoreTotal += question.note;
         }
-      } else {
-        // Vérifie où récupérer la réponse correcte selon le type de question
-        const bonneReponse = question.type === 'qcm' 
-            ? (question.bonnesReponses && question.bonnesReponses.length > 0 ? question.bonnesReponses[0].trim().toLowerCase() : "") 
-            : (question.reponseDirecte ? question.reponseDirecte.trim().toLowerCase() : "");
 
-        const reponseEtu = reponseEtudiant ? reponseEtudiant.trim().toLowerCase() : "";
-
+      } else if (question.type === 'directe') {
+        const bonneReponse = String(question.reponseDirecte).trim().toLowerCase();
+        const reponse = reponseEtudiant.trim().toLowerCase();
         const tolerance = question.tolerance || 0;
-        const distance = levenshtein(bonneReponse, reponseEtu);
 
-        if (distance <= tolerance) {
+        const difference = levenshtein(bonneReponse, reponse);
+        console.log("🔎 Question:", question.enonce);
+        console.log("🔎 Réponse étudiant:", reponseEtudiant);
+        console.log("🔎 Bonne réponse attendue :", bonneReponse);
+        console.log(`🧮 Distance entre "${bonneReponse}" et "${reponse}" :`, difference);
+
+        if (difference <= tolerance && difference < bonneReponse.length) {
           scoreTotal += question.note;
         }
+        console.log(`⚖️ Comparaison tolérante : "${reponse}" vs "${bonneReponse}" → distance ${difference}, tolérance ${tolerance}`);
       }
     }
 
     const scoreSur100 = scoreMax > 0 ? Math.round((scoreTotal / scoreMax) * 100) : 0;
+    console.log("🔍 ScoreTotal:", scoreTotal);
+    console.log("🔍 ScoreMax:", scoreMax);
+    console.log("🧮 Score final:", scoreSur100);
+
     res.json({ score: scoreSur100 });
 
   } catch (err) {
@@ -133,7 +164,7 @@ exports.getResultatEtudiant = async (req, res) => {
   }
 };
 
-// Enregistrer la soumission d’un étudiant
+// ✅ Enregistrer la soumission d’un étudiant
 exports.enregistrerSoumission = async (req, res) => {
   const userId = req.user.id;
   console.log("🧐 ID utilisateur récupéré :", userId);

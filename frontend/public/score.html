@@ -2,25 +2,244 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Score de l'examen</title>
-  <link rel="stylesheet" href="style.css">
   <style>
-    body {
-      text-align: center;
-      margin-top: 50px;
-      font-family: Arial, sans-serif;
+    :root {
+      --primary-color: #4CAF50;
+      --primary-light: #81C784;
+      --accent-color: #3F51B5;
+      --light-bg: #f5f9f5;
+      --dark-text: #333;
+      --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--light-bg);
+      color: var(--dark-text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 1rem;
+      box-shadow: var(--shadow);
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeIn 1s forwards 0.3s;
+    }
+
+    h1 {
+      color: var(--primary-color);
+      margin-bottom: 2rem;
+      font-size: 2.2rem;
+      position: relative;
+      display: inline-block;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      width: 0;
+      height: 3px;
+      background: var(--accent-color);
+      transform: translateX(-50%);
+      animation: lineGrow 1.5s forwards 1s;
+    }
+
+    #score-container {
+      position: relative;
+      padding: 2rem;
+      margin: 1.5rem 0;
+      border-radius: 0.8rem;
+      background-color: rgba(76, 175, 80, 0.1);
+      overflow: hidden;
+    }
+
     #score {
-      font-size: 2em;
-      color: green;
+      font-size: 3rem;
+      font-weight: bold;
+      color: var(--primary-color);
+      display: inline-block;
+      opacity: 0;
+      animation: popIn 0.7s forwards 1.5s;
+    }
+
+    .loading-circle {
+      display: inline-block;
+      width: 80px;
+      height: 80px;
+      position: relative;
+    }
+
+    .loading-circle div {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: var(--primary-color);
+      border-radius: 50%;
+      animation: loading 1.2s linear infinite;
+    }
+
+    .loading-circle div:nth-child(1) {
+      top: 0;
+      left: 32px;
+      animation-delay: 0s;
+    }
+    .loading-circle div:nth-child(2) {
+      top: 8px;
+      right: 8px;
+      animation-delay: -0.1s;
+    }
+    .loading-circle div:nth-child(3) {
+      right: 0;
+      top: 32px;
+      animation-delay: -0.2s;
+    }
+    .loading-circle div:nth-child(4) {
+      bottom: 8px;
+      right: 8px;
+      animation-delay: -0.3s;
+    }
+    .loading-circle div:nth-child(5) {
+      bottom: 0;
+      left: 32px;
+      animation-delay: -0.4s;
+    }
+    .loading-circle div:nth-child(6) {
+      bottom: 8px;
+      left: 8px;
+      animation-delay: -0.5s;
+    }
+    .loading-circle div:nth-child(7) {
+      left: 0;
+      top: 32px;
+      animation-delay: -0.6s;
+    }
+    .loading-circle div:nth-child(8) {
+      top: 8px;
+      left: 8px;
+      animation-delay: -0.7s;
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: var(--primary-light);
+      opacity: 0;
+    }
+
+    .success-message {
+      margin-top: 1.5rem;
+      opacity: 0;
+      animation: fadeIn 0.7s forwards 1.8s;
+      font-style: italic;
+      color: #666;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.6);
+      }
+      70% {
+        transform: scale(1.1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes loading {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    @keyframes lineGrow {
+      to {
+        width: 80%;
+      }
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(500px) rotate(360deg);
+        opacity: 0;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Résultat de l'examen</h1>
-  <div id="score">Calcul en cours...</div>
+  <div class="container">
+    <h1>Résultat de l'examen</h1>
+    <div id="score-container">
+      <div id="loading" class="loading-circle">
+        <div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div>
+      </div>
+      <div id="score" style="display:none">Calcul en cours...</div>
+    </div>
+    <p class="success-message">Félicitations pour avoir terminé votre examen!</p>
+  </div>
 
   <script>
+    // Création des confettis
+    function createConfetti() {
+      const colors = ['#4CAF50', '#81C784', '#3F51B5', '#FFC107', '#FF5722'];
+      const container = document.querySelector('body');
+      
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.width = Math.random() * 10 + 5 + 'px';
+        confetti.style.height = Math.random() * 10 + 5 + 'px';
+        confetti.style.opacity = '0';
+        confetti.style.transform = 'translateY(-100px)';
+        confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s forwards ${Math.random() * 2}s`;
+        container.appendChild(confetti);
+      }
+    }
+
     const token = localStorage.getItem('token');
 
     if (!token) {
@@ -45,13 +264,48 @@
           return;
         }
 
-
         if (!res.ok) throw new Error("Erreur lors du calcul du score.");
 
+        // Simulation d'un délai pour l'effet de chargement
+        setTimeout(() => {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('score').style.display = 'block';
+        }, 1500);
+
         const data = await res.json();
-        document.getElementById('score').textContent = `Votre score : ${data.score}/100`;
+        
+        // Anime le score en comptant de 0 jusqu'au score final
+        const scoreElement = document.getElementById('score');
+        const finalScore = data.score;
+        let currentScore = 0;
+        
+        // Ajuster la couleur en fonction du score
+        let scoreColor = "#FF5252"; // Rouge pour score faible
+        if (finalScore >= 50) scoreColor = "#FFC107"; // Jaune pour score moyen
+        if (finalScore >= 70) scoreColor = "#4CAF50"; // Vert pour bon score
+        
+        setTimeout(() => {
+          const counter = setInterval(() => {
+            currentScore++;
+            scoreElement.textContent = `Votre score : ${currentScore}/100`;
+            
+            if (currentScore >= finalScore) {
+              clearInterval(counter);
+              scoreElement.style.color = scoreColor;
+              
+              // Lancer les confettis si le score est bon
+              if (finalScore >= 60) {
+                createConfetti();
+              }
+            }
+          }, 30);
+        }, 1600);
+        
       } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('score').style.display = 'block';
         document.getElementById('score').textContent = 'Erreur : ' + err.message;
+        document.getElementById('score').style.color = '#FF5252';
       }
     }
 
