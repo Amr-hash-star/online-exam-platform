@@ -1,251 +1,672 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Modifier une question</title>
-  <link rel="stylesheet" href="style4.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #e0f7fa, #fce4ec);
+      min-height: 100vh;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.5s ease;
+    }
+
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+      margin-bottom: 25px;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #34495e;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .options-container {
+      margin-top: 15px;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .option-item input[type="text"] {
+      flex-grow: 1;
+      margin-right: 10px;
+    }
+
+    .option-item input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 8px;
+    }
+
+    .btn-add-option {
+      background-color: #2ecc71;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 15px;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .btn-add-option:hover {
+      background-color: #27ae60;
+      transform: translateY(-2px);
+    }
+
+    .btn-remove {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .btn-remove:hover {
+      background-color: #c0392b;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 25px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+    }
+
+    .btn-primary {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-secondary {
+      background-color: #95a5a6;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #7f8c8d;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
+    }
+
+    .preview-container {
+      margin-top: 20px;
+    }
+
+    .preview-container img,
+    .preview-container video,
+    .preview-container audio {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .current-media {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f2f2f2;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .current-media img,
+    .current-media video,
+    .current-media audio {
+      max-width: 300px;
+      max-height: 200px;
+      margin-bottom: 10px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .success-message {
+      color: #2ecc71;
+      font-size: 16px;
+      margin-top: 20px;
+      text-align: center;
+      padding: 10px;
+      background-color: rgba(46, 204, 113, 0.1);
+      border-radius: 8px;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-type-toggle {
+      display: flex;
+      margin-bottom: 20px;
+      background-color: #f2f2f2;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .form-type-toggle label {
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-bottom: 0;
+    }
+
+    .form-type-toggle input[type="radio"] {
+      display: none;
+    }
+
+    .form-type-toggle input[type="radio"]:checked + label {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .status-message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .status-message.success {
+      background-color: rgba(46, 204, 113, 0.2);
+      color: #27ae60;
+    }
+
+    .status-message.error {
+      background-color: rgba(231, 76, 60, 0.2);
+      color: #c0392b;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+      margin-left: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
-
 <body>
-  <h2>Modifier la question</h2>
-  <form id="modifierForm">
-    <label>Enoncé :</label>
-    <input type="text" id="enonce" required />
+  <div class="container">
+    <h1>Modifier la question</h1>
+    
+    <form id="questionForm">
+      <!-- Champ caché pour l'ID de la question -->
+      <input type="hidden" id="questionId" name="questionId">
+      <!-- Champ caché pour l'ID de l'examen -->
+      <input type="hidden" id="examId" name="examId">
 
-    <label>Type :</label>
-    <select id="type" required>
-      <option value="qcm">QCM</option>
-      <option value="directe">Directe</option>
-    </select>
+      <div class="form-group">
+        <label for="type">Type de question</label>
+        <select id="type" name="type" required>
+          <option value="qcm">QCM</option>
+          <option value="directe">Question directe</option>
+        </select>
+      </div>
 
-    <div id="qcmFields" class="fade-slide" style="display: none;">
-      <label>Options :</label>
-      <div class="options-container" id="optionsContainer"></div>
-      <button type="button" onclick="ajouterOption()">+ Ajouter option</button>
-    </div>
+      <div class="form-group">
+        <label for="enonce">Énoncé de la question</label>
+        <textarea id="enonce" name="enonce" required></textarea>
+      </div>
 
-    <div id="directeFields" class="fade-slide" style="display: none;">
-      <label>Réponse attendue :</label>
-      <input type="text" id="reponse" />
+      <div class="form-group">
+        <label for="note">Note (points)</label>
+        <input type="number" id="note" name="note" min="0" step="0.5" required>
+      </div>
 
-      <label>Tolérance (caractères) :</label>
-      <input type="number" id="tolerance" min="0" />
-    </div>
+      <div class="form-group">
+        <label for="duree">Durée (en minutes)</label>
+        <input type="number" id="duree" name="duree" min="1" required>
+      </div>
 
-    <label>Note :</label>
-    <input type="number" id="note" step="0.1" min="0" />
+      <!-- Section média actuel -->
+      <div class="form-group">
+        <label>Média actuel</label>
+        <div id="currentMedia" class="current-media">
+          <p>Aucun média</p>
+        </div>
+      </div>
 
-    <label>Durée (en minutes) :</label>
-    <input type="number" id="duree" min="0" />
+      <div class="form-group">
+        <label for="media">Changer le média (optionnel)</label>
+        <input type="file" id="media" name="media" accept="image/*,video/*,audio/*">
+        <div id="mediaPreview" class="preview-container"></div>
+      </div>
 
-    <label>Média (URL ou nom de fichier) :</label>
-    <input type="text" id="media" />
+      <!-- Section pour QCM -->
+      <div id="qcmSection">
+        <div class="form-group">
+          <label>Options et réponses correctes</label>
+          <button type="button" id="addOption" class="btn-add-option">+ Ajouter une option</button>
+          <div id="optionsContainer" class="options-container"></div>
+        </div>
+      </div>
 
-    <button type="submit">Enregistrer les modifications</button>
-  </form>
+      <!-- Section pour question directe -->
+      <div id="directeSection" class="hidden">
+        <div class="form-group">
+          <label for="reponseDirecte">Réponse correcte</label>
+          <input type="text" id="reponseDirecte" name="reponseDirecte">
+        </div>
+
+        <div class="form-group">
+          <label for="tolerance">Tolérance (distance de Levenshtein)</label>
+          <input type="number" id="tolerance" name="tolerance" min="0" value="0">
+          <small>0 = correspondance exacte, 1 = tolère une lettre différente, etc.</small>
+        </div>
+      </div>
+
+      <div id="statusMessage" class="status-message hidden"></div>
+
+      <div class="buttons">
+        <button type="button" class="btn btn-secondary" id="btnRetour">Retour</button>
+        <button type="submit" class="btn btn-primary" id="btnSave">
+          Enregistrer les modifications
+          <span id="loadingSpinner" class="loading hidden"></span>
+        </button>
+      </div>
+    </form>
+  </div>
 
   <script>
-    const id = new URLSearchParams(window.location.search).get("id");
-    const examId = new URLSearchParams(window.location.search).get("examId");
-
-    if (!id || !examId) {
-      console.error("Erreur : ID de la question ou examId manquant !");
-      alert("Erreur : ID de la question ou examId est invalide.");
-      return;
-    }
-
-    let bonnesReponses = [];
-
-    function toggleVisibility(element, show) {
-      if (show) {
-        element.style.display = "block";
-        requestAnimationFrame(() => element.classList.add("fade-slide", "show"));
-      } else {
-        element.classList.remove("fade-slide");
-        setTimeout(() => {
-          element.classList.remove("show");
-          element.style.display = "none";
-        }, 400);
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Récupérer les paramètres de l'URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const questionId = urlParams.get('id');
+      const examId = urlParams.get('examId');
+      
+      if (!questionId || !examId) {
+        showStatusMessage('Paramètres manquants dans l\'URL', 'error');
+        return;
       }
-    }
 
-    async function chargerQuestion() {
+      // Définir les champs cachés
+      document.getElementById('questionId').value = questionId;
+      document.getElementById('examId').value = examId;
+
+      // Variables globales pour stocker les données de la question
+      let questionData = null;
+      
+      // Chargement initial des données de la question
       try {
-        // Log pour déboguer les paramètres
-        console.log("Tentative de chargement de la question avec ID:", id);
-
-        const res = await fetch(`http://localhost:5000/api/questions/question/${id}`);
-        if (!res.ok) {
-          throw new Error(`Erreur HTTP ${res.status}: ${res.statusText}`);
+        showLoading(true);
+        const response = await fetch(`http://localhost:5000/api/questions/question/${questionId}`);
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération de la question');
         }
-
-        const question = await res.json();
-        console.log("Question chargée:", question);
-
-        document.getElementById("enonce").value = question.enonce || "";
-        document.getElementById("type").value = question.type || "qcm";
-        document.getElementById("note").value = question.note || "";
-        document.getElementById("duree").value = question.duree || "";
-        document.getElementById("media").value = question.media || "";
-
-        if (question.type === "qcm") {
-          toggleVisibility(document.getElementById("qcmFields"), true);
-          toggleVisibility(document.getElementById("directeFields"), false);
-          bonnesReponses = question.bonnesReponses || [];
-          afficherOptions(question.options || []);
-        } else {
-          toggleVisibility(document.getElementById("qcmFields"), false);
-          toggleVisibility(document.getElementById("directeFields"), true);
-          document.getElementById("reponse").value = question.reponseDirecte || ""; // Correction ici: reponseDirecte au lieu de reponse
-          document.getElementById("tolerance").value = question.tolerance || 0;
-        }
-      } catch (err) {
-        alert("Erreur lors du chargement de la question: " + err.message);
-        console.error("Détails de l'erreur:", err);
+        
+        questionData = await response.json();
+        console.log('Question récupérée:', questionData);
+        
+        // Remplir le formulaire avec les données récupérées
+        fillFormWithQuestionData(questionData);
+        showLoading(false);
+      } catch (error) {
+        console.error('Erreur:', error);
+        showStatusMessage('Erreur lors du chargement de la question', 'error');
+        showLoading(false);
       }
-    }
 
-    function afficherOptions(options) {
-      const container = document.getElementById("optionsContainer");
-      container.innerHTML = "";
-      options.forEach(opt => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "option-wrapper";
+      // Fonction pour remplir le formulaire avec les données de la question
+      function fillFormWithQuestionData(data) {
+        document.getElementById('type').value = data.type;
+        document.getElementById('enonce').value = data.enonce;
+        document.getElementById('note').value = data.note;
+        document.getElementById('duree').value = data.duree;
 
-        const input = document.createElement("input");
-        input.type = "text";
-        input.className = "option-input";
-        input.value = opt;
+        // Gestion du média
+        if (data.media) {
+          const mediaUrl = `http://localhost:5000/${data.media}`;
+          const fileExtension = data.media.split('.').pop().toLowerCase();
+          const mediaContainer = document.getElementById('currentMedia');
+          
+          mediaContainer.innerHTML = ''; // Vider le conteneur
 
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = bonnesReponses.includes(opt);
-        checkbox.onchange = () => {
-          if (checkbox.checked && !bonnesReponses.includes(input.value)) {
-            bonnesReponses.push(input.value);
-          } else if (!checkbox.checked) {
-            bonnesReponses = bonnesReponses.filter(r => r !== input.value);
+          if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+            const img = document.createElement('img');
+            img.src = mediaUrl;
+            img.alt = "Image actuelle";
+            mediaContainer.appendChild(img);
+          } else if (['mp4', 'webm'].includes(fileExtension)) {
+            const video = document.createElement('video');
+            video.controls = true;
+            video.src = mediaUrl;
+            mediaContainer.appendChild(video);
+          } else if (['mp3', 'wav', 'ogg'].includes(fileExtension)) {
+            const audio = document.createElement('audio');
+            audio.controls = true;
+            audio.src = mediaUrl;
+            mediaContainer.appendChild(audio);
+          }
+
+          const mediaInfo = document.createElement('p');
+          mediaInfo.textContent = `Fichier actuel: ${data.media.split('/').pop()}`;
+          mediaContainer.appendChild(mediaInfo);
+        } else {
+          document.getElementById('currentMedia').innerHTML = '<p>Aucun média</p>';
+        }
+
+        // Afficher la section appropriée selon le type de question
+        if (data.type === 'qcm') {
+          document.getElementById('qcmSection').classList.remove('hidden');
+          document.getElementById('directeSection').classList.add('hidden');
+          
+          // Remplir les options pour QCM
+          const optionsContainer = document.getElementById('optionsContainer');
+          optionsContainer.innerHTML = ''; // Vider le conteneur d'options
+          
+          if (data.options && data.options.length > 0) {
+            data.options.forEach((option, index) => {
+              const isCorrect = data.bonnesReponses && data.bonnesReponses.includes(index);
+              addOptionToForm(option, isCorrect);
+            });
+          } else {
+            // Ajouter au moins une option vide
+            addOptionToForm('', false);
+          }
+        } else {
+          document.getElementById('qcmSection').classList.add('hidden');
+          document.getElementById('directeSection').classList.remove('hidden');
+          
+          // Remplir les champs pour question directe
+          document.getElementById('reponseDirecte').value = data.reponseDirecte || '';
+          document.getElementById('tolerance').value = data.tolerance || 0;
+        }
+      }
+
+      // Fonction pour ajouter une option au formulaire QCM
+      function addOptionToForm(optionText = '', isCorrect = false) {
+        const optionsContainer = document.getElementById('optionsContainer');
+        const optionItem = document.createElement('div');
+        optionItem.className = 'option-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = isCorrect;
+        checkbox.name = 'correctOption';
+        
+        const textInput = document.createElement('input');
+        textInput.type = 'text';
+        textInput.value = optionText;
+        textInput.placeholder = 'Option de réponse';
+        textInput.required = true;
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn-remove';
+        removeBtn.textContent = 'X';
+        removeBtn.onclick = function() {
+          optionsContainer.removeChild(optionItem);
+        };
+        
+        optionItem.appendChild(checkbox);
+        optionItem.appendChild(textInput);
+        optionItem.appendChild(removeBtn);
+        
+        optionsContainer.appendChild(optionItem);
+      }
+
+      // Écouteur pour le changement de type de question
+      document.getElementById('type').addEventListener('change', function() {
+        if (this.value === 'qcm') {
+          document.getElementById('qcmSection').classList.remove('hidden');
+          document.getElementById('directeSection').classList.add('hidden');
+        } else {
+          document.getElementById('qcmSection').classList.add('hidden');
+          document.getElementById('directeSection').classList.remove('hidden');
+        }
+      });
+
+      // Écouteur pour le bouton d'ajout d'option
+      document.getElementById('addOption').addEventListener('click', function() {
+        addOptionToForm();
+      });
+
+      // Prévisualisation du média
+      document.getElementById('media').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const previewContainer = document.getElementById('mediaPreview');
+        previewContainer.innerHTML = '';
+
+        const fileReader = new FileReader();
+        fileReader.onload = function(event) {
+          const fileType = file.type.split('/')[0];
+          
+          if (fileType === 'image') {
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            previewContainer.appendChild(img);
+          } else if (fileType === 'video') {
+            const video = document.createElement('video');
+            video.controls = true;
+            video.src = event.target.result;
+            previewContainer.appendChild(video);
+          } else if (fileType === 'audio') {
+            const audio = document.createElement('audio');
+            audio.controls = true;
+            audio.src = event.target.result;
+            previewContainer.appendChild(audio);
           }
         };
+        
+        fileReader.readAsDataURL(file);
+      });
 
-        input.addEventListener("input", () => {
-          const index = bonnesReponses.indexOf(opt);
-          if (index !== -1) {
-            bonnesReponses[index] = input.value;
+      // Écouteur pour le bouton de retour
+      document.getElementById('btnRetour').addEventListener('click', function() {
+        // Rediriger vers la page des questions de l'examen
+        window.location.href = `/exam/${getExamCode(examId)}`;
+      });
+
+      // Fonction utilitaire pour extraire le code d'examen de l'ID
+      function getExamCode(examId) {
+        // Si examId est un code, le retourner directement
+        if (examId.length < 24) return examId;
+        
+        // Sinon, on pourrait avoir besoin d'une logique supplémentaire
+        // Mais dans ce cas, on retourne simplement l'examId, et le backend
+        // s'occupera de retrouver le bon examen
+        return examId;
+      }
+
+      // Soumission du formulaire
+      document.getElementById('questionForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        try {
+          showLoading(true);
+          
+          // Créer un FormData pour envoyer les données + fichier
+          const formData = new FormData();
+          
+          // Ajout des champs de base
+          formData.append('examId', document.getElementById('examId').value);
+          formData.append('type', document.getElementById('type').value);
+          formData.append('enonce', document.getElementById('enonce').value);
+          formData.append('note', document.getElementById('note').value);
+          formData.append('duree', document.getElementById('duree').value);
+          
+          // Ajouter le fichier média s'il est fourni
+          const mediaInput = document.getElementById('media');
+          if (mediaInput.files.length > 0) {
+            formData.append('media', mediaInput.files[0]);
           }
-        });
-
-        wrapper.appendChild(input);
-        wrapper.appendChild(checkbox);
-        container.appendChild(wrapper);
-      });
-    }
-
-    function ajouterOption() {
-      const wrapper = document.createElement("div");
-      wrapper.className = "option-wrapper";
-
-      const input = document.createElement("input");
-      input.type = "text";
-      input.className = "option-input";
-      input.placeholder = "Nouvelle option";
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.onchange = () => {
-        if (checkbox.checked && !bonnesReponses.includes(input.value)) {
-          bonnesReponses.push(input.value);
-        } else if (!checkbox.checked) {
-          bonnesReponses = bonnesReponses.filter(r => r !== input.value);
+          
+          // Traitement selon le type de question
+          if (document.getElementById('type').value === 'qcm') {
+            // Récupérer les options et les réponses correctes pour QCM
+            const optionItems = document.querySelectorAll('.option-item');
+            const options = [];
+            const bonnesReponses = [];
+            
+            optionItems.forEach((item, index) => {
+              const optionText = item.querySelector('input[type="text"]').value;
+              const isCorrect = item.querySelector('input[type="checkbox"]').checked;
+              
+              options.push(optionText);
+              if (isCorrect) {
+                bonnesReponses.push(index);
+              }
+            });
+            
+            formData.append('options', JSON.stringify(options));
+            formData.append('bonnesReponses', JSON.stringify(bonnesReponses));
+          } else {
+            // Ajouter les champs pour question directe
+            formData.append('reponse', document.getElementById('reponseDirecte').value);
+            formData.append('tolerance', document.getElementById('tolerance').value);
+          }
+          
+          // Envoyer la requête de mise à jour
+          const response = await fetch(`http://localhost:5000/api/questions/${questionId}`, {
+            method: 'PUT',
+            body: formData
+          });
+          
+          const result = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(result.message || 'Erreur lors de la mise à jour');
+          }
+          
+          showStatusMessage('Question mise à jour avec succès!', 'success');
+          
+          // Recharger les données après mise à jour
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+          
+        } catch (error) {
+          console.error('Erreur:', error);
+          showStatusMessage(`Erreur: ${error.message}`, 'error');
+        } finally {
+          showLoading(false);
         }
-      };
-
-      input.addEventListener("input", () => {
-        if (checkbox.checked && !bonnesReponses.includes(input.value)) {
-          bonnesReponses.push(input.value);
-        }
       });
 
-      wrapper.appendChild(input);
-      wrapper.appendChild(checkbox);
-      document.getElementById("optionsContainer").appendChild(wrapper);
-    }
-
-    function feedbackAnimation(type) {
-      document.body.style.animation = type === 'success'
-        ? 'bgFlashSuccess 1s ease'
-        : 'bgFlashError 1s ease';
-      setTimeout(() => {
-        document.body.style.animation = '';
-      }, 1000);
-    }
-
-    document.getElementById("type").addEventListener("change", (e) => {
-      const qcm = document.getElementById("qcmFields");
-      const directe = document.getElementById("directeFields");
-      toggleVisibility(qcm, e.target.value === "qcm");
-      toggleVisibility(directe, e.target.value === "directe");
-    });
-
-    document.getElementById("modifierForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const type = document.getElementById("type").value;
-
-      // Créons un objet FormData pour gérer les données au format que le backend attend
-      const formData = new FormData();
-
-      formData.append("enonce", document.getElementById("enonce").value);
-      formData.append("type", type);
-      formData.append("note", document.getElementById("note").value);
-      formData.append("duree", document.getElementById("duree").value);
-
-      // Si un média est spécifié mais n'est pas modifié, on l'envoie comme chaîne
-      if (document.getElementById("media").value) {
-        formData.append("media", document.getElementById("media").value);
+      // Fonctions utilitaires
+      function showStatusMessage(message, type) {
+        const statusEl = document.getElementById('statusMessage');
+        statusEl.textContent = message;
+        statusEl.className = `status-message ${type}`;
+        statusEl.classList.remove('hidden');
+        
+        // Faire défiler jusqu'au message
+        statusEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
 
-      if (type === "qcm") {
-        const options = Array.from(document.querySelectorAll(".option-input"))
-          .map(input => input.value)
-          .filter(opt => opt.trim() !== "");
-
-        formData.append("options", JSON.stringify(options));
-        formData.append("bonnesReponses", JSON.stringify(bonnesReponses.filter(r => options.includes(r))));
-      } else {
-        formData.append("reponse", document.getElementById("reponse").value);
-        formData.append("tolerance", document.getElementById("tolerance").value);
-      }
-
-      try {
-        // Notez que nous n'utilisons plus de headers Content-Type puisque FormData s'en charge
-        const res = await fetch(`http://localhost:5000/api/questions/${id}`, {
-          method: "PUT",
-          body: formData
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          console.log("Réponse du serveur:", data);
-          feedbackAnimation("success");
-          alert("Question modifiée avec succès !");
-          window.location.href = `questions.html?examId=${examId}`;
+      function showLoading(isLoading) {
+        const spinner = document.getElementById('loadingSpinner');
+        const saveBtn = document.getElementById('btnSave');
+        
+        if (isLoading) {
+          spinner.classList.remove('hidden');
+          saveBtn.disabled = true;
         } else {
-          const error = await res.json();
-          console.error("Erreur de modification:", error);
-          feedbackAnimation("error");
-          alert("Erreur lors de la modification: " + (error.message || "Erreur inconnue"));
+          spinner.classList.add('hidden');
+          saveBtn.disabled = false;
         }
-      } catch (err) {
-        feedbackAnimation("error");
-        alert("Erreur réseau: " + err.message);
-        console.error(err);
       }
     });
-
-    chargerQuestion();
   </script>
 </body>
-
 </html>
