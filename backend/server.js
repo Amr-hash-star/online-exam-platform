@@ -11,6 +11,8 @@ const questionRoutes = require('./routes/questionRoutes');
 
 // Chargement des variables d'environnement depuis le fichier .env
 dotenv.config();
+console.log("✅ JWT_SECRET lu depuis .env :", process.env.JWT_SECRET);
+
 
 // Création d'une instance Express
 const app = express();
@@ -21,27 +23,29 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/exams', examRoutes);
+app.use('/api/questions', questionRoutes);
+
 
 // Pour servir les fichiers HTML du frontend
 app.use(express.static(path.join(__dirname, '../frontend/public')));
 // Ajout de la route spécifique pour examen.html
 app.get('/examen.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'frontend', 'public', 'examen.html'));
+    res.sendFile(path.join(__dirname, '../frontend/public/examen.html'));
   });
 // Sert les fichiers uploadés (images, sons, etc.)
 app.use('/uploads', express.static('uploads'));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/exams', examRoutes);
-app.use('/api/questions', questionRoutes);
+
 
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
 app.get('/exam/:code', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'questions.html'));
+  res.sendFile(path.join(__dirname, 'public/questions.html'));
 });
 
 // Vérification de l'URI lue depuis .env
