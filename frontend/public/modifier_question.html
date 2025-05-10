@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <title>Modifier une question</title>
   <link rel="stylesheet" href="style4.css">
 </head>
+
 <body>
   <h2>Modifier la question</h2>
   <form id="modifierForm">
@@ -46,7 +48,7 @@
   <script>
     const id = new URLSearchParams(window.location.search).get("id");
     const examId = new URLSearchParams(window.location.search).get("examId");
-    
+
     if (!id || !examId) {
       console.error("Erreur : ID de la question ou examId manquant !");
       alert("Erreur : ID de la question ou examId est invalide.");
@@ -69,40 +71,40 @@
     }
 
     async function chargerQuestion() {
-  try {
-    // Log pour déboguer les paramètres
-    console.log("Tentative de chargement de la question avec ID:", id);
-    
-    const res = await fetch(`http://localhost:5000/api/questions/question/${id}`);
-    if (!res.ok) {
-      throw new Error(`Erreur HTTP ${res.status}: ${res.statusText}`);
-    }
-    
-    const question = await res.json();
-    console.log("Question chargée:", question);
+      try {
+        // Log pour déboguer les paramètres
+        console.log("Tentative de chargement de la question avec ID:", id);
 
-    document.getElementById("enonce").value = question.enonce || "";
-    document.getElementById("type").value = question.type || "qcm";
-    document.getElementById("note").value = question.note || "";
-    document.getElementById("duree").value = question.duree || "";
-    document.getElementById("media").value = question.media || "";
+        const res = await fetch(`http://localhost:5000/api/questions/question/${id}`);
+        if (!res.ok) {
+          throw new Error(`Erreur HTTP ${res.status}: ${res.statusText}`);
+        }
 
-    if (question.type === "qcm") {
-      toggleVisibility(document.getElementById("qcmFields"), true);
-      toggleVisibility(document.getElementById("directeFields"), false);
-      bonnesReponses = question.bonnesReponses || [];
-      afficherOptions(question.options || []);
-    } else {
-      toggleVisibility(document.getElementById("qcmFields"), false);
-      toggleVisibility(document.getElementById("directeFields"), true);
-      document.getElementById("reponse").value = question.reponseDirecte || ""; // Correction ici: reponseDirecte au lieu de reponse
-      document.getElementById("tolerance").value = question.tolerance || 0;
+        const question = await res.json();
+        console.log("Question chargée:", question);
+
+        document.getElementById("enonce").value = question.enonce || "";
+        document.getElementById("type").value = question.type || "qcm";
+        document.getElementById("note").value = question.note || "";
+        document.getElementById("duree").value = question.duree || "";
+        document.getElementById("media").value = question.media || "";
+
+        if (question.type === "qcm") {
+          toggleVisibility(document.getElementById("qcmFields"), true);
+          toggleVisibility(document.getElementById("directeFields"), false);
+          bonnesReponses = question.bonnesReponses || [];
+          afficherOptions(question.options || []);
+        } else {
+          toggleVisibility(document.getElementById("qcmFields"), false);
+          toggleVisibility(document.getElementById("directeFields"), true);
+          document.getElementById("reponse").value = question.reponseDirecte || ""; // Correction ici: reponseDirecte au lieu de reponse
+          document.getElementById("tolerance").value = question.tolerance || 0;
+        }
+      } catch (err) {
+        alert("Erreur lors du chargement de la question: " + err.message);
+        console.error("Détails de l'erreur:", err);
+      }
     }
-  } catch (err) {
-    alert("Erreur lors du chargement de la question: " + err.message);
-    console.error("Détails de l'erreur:", err);
-  }
-}
 
     function afficherOptions(options) {
       const container = document.getElementById("optionsContainer");
@@ -191,44 +193,53 @@
 
       const type = document.getElementById("type").value;
 
-      const data = {
-        enonce: document.getElementById("enonce").value,
-        type,
-        note: document.getElementById("note").value,
-        duree: document.getElementById("duree").value,
-        media: document.getElementById("media").value,
-      };
+      // Créons un objet FormData pour gérer les données au format que le backend attend
+      const formData = new FormData();
+
+      formData.append("enonce", document.getElementById("enonce").value);
+      formData.append("type", type);
+      formData.append("note", document.getElementById("note").value);
+      formData.append("duree", document.getElementById("duree").value);
+
+      // Si un média est spécifié mais n'est pas modifié, on l'envoie comme chaîne
+      if (document.getElementById("media").value) {
+        formData.append("media", document.getElementById("media").value);
+      }
 
       if (type === "qcm") {
         const options = Array.from(document.querySelectorAll(".option-input"))
           .map(input => input.value)
           .filter(opt => opt.trim() !== "");
 
-        data.options = options;
-        data.bonnesReponses = bonnesReponses.filter(r => options.includes(r));
+        formData.append("options", JSON.stringify(options));
+        formData.append("bonnesReponses", JSON.stringify(bonnesReponses.filter(r => options.includes(r))));
       } else {
-        data.reponse = document.getElementById("reponse").value;
-        data.tolerance = Number(document.getElementById("tolerance").value);
+        formData.append("reponse", document.getElementById("reponse").value);
+        formData.append("tolerance", document.getElementById("tolerance").value);
       }
 
       try {
+        // Notez que nous n'utilisons plus de headers Content-Type puisque FormData s'en charge
         const res = await fetch(`http://localhost:5000/api/questions/${id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          body: formData
         });
 
         if (res.ok) {
+          const data = await res.json();
+          console.log("Réponse du serveur:", data);
           feedbackAnimation("success");
           alert("Question modifiée avec succès !");
           window.location.href = `questions.html?examId=${examId}`;
         } else {
+          const error = await res.json();
+          console.error("Erreur de modification:", error);
           feedbackAnimation("error");
-          alert("Erreur lors de la modification.");
+          alert("Erreur lors de la modification: " + (error.message || "Erreur inconnue"));
         }
       } catch (err) {
         feedbackAnimation("error");
-        alert("Erreur réseau.");
+        alert("Erreur réseau: " + err.message);
         console.error(err);
       }
     });
@@ -236,4 +247,5 @@
     chargerQuestion();
   </script>
 </body>
+
 </html>
