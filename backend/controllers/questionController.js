@@ -7,16 +7,23 @@ const createQCM = async (req, res) => {
     const { examId, enonce, options, bonnesReponses, note, duree } = req.body;
     const media = req.file ? req.file.path : null; // ✅ récupérer le chemin du fichier
 
+    const parsedOptions = JSON.parse(options);
+    const parsedBonnesReponses = JSON.parse(bonnesReponses);
+
+    // ✅ Convertir les indices en texte réel des options cochées
+    const bonnesReponsesTextuelles = parsedBonnesReponses.map(index => parsedOptions[index]);
+
     const question = new Question({
       examId,
       type: 'qcm',
       enonce,
       media,
-      options: JSON.parse(options),
-      bonnesReponses: JSON.parse(bonnesReponses),
+      options: parsedOptions,
+      bonnesReponses: bonnesReponsesTextuelles,
       note,
       duree
     });
+
 
     await question.save();
 
@@ -121,10 +128,19 @@ const updateQuestion = async (req, res) => {
     if (data.options) {
       data.options = JSON.parse(data.options);
     }
-
+    
     if (data.bonnesReponses) {
-      data.bonnesReponses = JSON.parse(data.bonnesReponses);
+      const parsedBonnesReponses = JSON.parse(data.bonnesReponses);
+    
+      // ✅ Si les options ont aussi été envoyées, transformer les indices en texte
+      if (data.options) {
+        data.bonnesReponses = parsedBonnesReponses.map(index => data.options[index]);
+      } else {
+        // Sinon on ne modifie pas (cas rare)
+        data.bonnesReponses = parsedBonnesReponses;
+      }
     }
+    
 
     if (data.tolerance) {
       data.tolerance = parseFloat(data.tolerance);
