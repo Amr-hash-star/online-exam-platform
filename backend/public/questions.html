@@ -289,7 +289,21 @@
           const btnModifier = document.createElement('button');
           btnModifier.textContent = 'Modifier';
           btnModifier.onclick = () => {
-            window.location.href = `modifier_question.html?id=${q._id}&examId=${examId}`;
+            // Correction: Ajuster le chemin relatif et vérifier la présence des paramètres
+            console.log(`Redirection vers: modifier_question.html?id=${q._id}&examId=${examId}`);
+            // Assurez-vous que les ID sont bien définis
+            if (!q._id) {
+              console.error("ID de question manquant:", q);
+              alert("Erreur: ID de question manquant");
+              return;
+            }
+            if (!examId) {
+              console.error("ID d'examen manquant");
+              alert("Erreur: ID d'examen manquant");
+              return;
+            }
+            // Utiliser le chemin absolu au lieu du chemin relatif
+            window.location.href = `/modifier_question.html?id=${q._id}&examId=${examId}`;
           };
 
           const btnSupprimer = document.createElement('button');

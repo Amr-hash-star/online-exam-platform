@@ -69,32 +69,40 @@
     }
 
     async function chargerQuestion() {
-      try {
-        const res = await fetch(`http://localhost:5000/api/questions/question/${id}`);
-        const question = await res.json();
-
-        document.getElementById("enonce").value = question.enonce || "";
-        document.getElementById("type").value = question.type || "qcm";
-        document.getElementById("note").value = question.note || "";
-        document.getElementById("duree").value = question.duree || "";
-        document.getElementById("media").value = question.media || "";
-
-        if (question.type === "qcm") {
-          toggleVisibility(document.getElementById("qcmFields"), true);
-          toggleVisibility(document.getElementById("directeFields"), false);
-          bonnesReponses = question.bonnesReponses || [];
-          afficherOptions(question.options || []);
-        } else {
-          toggleVisibility(document.getElementById("qcmFields"), false);
-          toggleVisibility(document.getElementById("directeFields"), true);
-          document.getElementById("reponse").value = question.reponse || "";
-          document.getElementById("tolerance").value = question.tolerance || 0;
-        }
-      } catch (err) {
-        alert("Erreur lors du chargement de la question.");
-        console.error(err);
-      }
+  try {
+    // Log pour déboguer les paramètres
+    console.log("Tentative de chargement de la question avec ID:", id);
+    
+    const res = await fetch(`http://localhost:5000/api/questions/question/${id}`);
+    if (!res.ok) {
+      throw new Error(`Erreur HTTP ${res.status}: ${res.statusText}`);
     }
+    
+    const question = await res.json();
+    console.log("Question chargée:", question);
+
+    document.getElementById("enonce").value = question.enonce || "";
+    document.getElementById("type").value = question.type || "qcm";
+    document.getElementById("note").value = question.note || "";
+    document.getElementById("duree").value = question.duree || "";
+    document.getElementById("media").value = question.media || "";
+
+    if (question.type === "qcm") {
+      toggleVisibility(document.getElementById("qcmFields"), true);
+      toggleVisibility(document.getElementById("directeFields"), false);
+      bonnesReponses = question.bonnesReponses || [];
+      afficherOptions(question.options || []);
+    } else {
+      toggleVisibility(document.getElementById("qcmFields"), false);
+      toggleVisibility(document.getElementById("directeFields"), true);
+      document.getElementById("reponse").value = question.reponseDirecte || ""; // Correction ici: reponseDirecte au lieu de reponse
+      document.getElementById("tolerance").value = question.tolerance || 0;
+    }
+  } catch (err) {
+    alert("Erreur lors du chargement de la question: " + err.message);
+    console.error("Détails de l'erreur:", err);
+  }
+}
 
     function afficherOptions(options) {
       const container = document.getElementById("optionsContainer");
