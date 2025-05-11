@@ -285,6 +285,11 @@
         if (finalScore >= 70) scoreColor = "#4CAF50"; // Vert pour bon score
         
         setTimeout(() => {
+          if (finalScore === 0) {
+            scoreElement.textContent = `Votre score : 0/100`;
+            scoreElement.style.color = '#FF5252';
+            return;
+          }
           const counter = setInterval(() => {
             currentScore++;
             scoreElement.textContent = `Votre score : ${currentScore}/100`;
